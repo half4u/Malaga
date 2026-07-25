@@ -119,6 +119,51 @@ table.board td.when{font-family:var(--mono);font-size:12px;color:var(--buganvill
 footer{margin-top:46px;padding-top:18px;border-top:2px solid var(--ink);font-size:13px;color:var(--stone)}
 footer ul{padding-left:18px;margin:8px 0 0}
 footer li{margin-bottom:5px}
+/* rating + price chips */
+.gchips{display:inline-flex;gap:5px;margin-left:7px;vertical-align:baseline}
+.gchip{font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:none;
+  background:#EDEFF3;color:#3A5474;padding:2px 5px;border-radius:2px;white-space:nowrap}
+.gchip.star{background:#FDF2DC;color:#7A5200}
+.gchip b{font-weight:400;opacity:.62}
+.pick.splurge .gchip{background:#FBE7EE;color:#8E1C4B}
+.pick.splurge .gchip.star{background:#FDF2DC;color:#7A5200}
+
+/* map button */
+.mapbtn{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--azul);color:var(--azul);
+  padding:5px 10px;border-radius:2px;cursor:pointer;margin-top:8px}
+.mapbtn:hover{background:var(--azul);color:#fff}
+.mapbtn:focus-visible{outline:2px solid var(--buganvilla);outline-offset:2px}
+ul.sights .mapbtn{margin-top:7px}
+
+/* bottom sheet */
+.sheet{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.sheet-back{position:absolute;inset:0;background:rgba(10,37,64,.55);backdrop-filter:blur(2px)}
+.sheet-card{position:relative;background:var(--cal);width:100%;max-width:600px;
+  border-radius:6px 6px 0 0;padding:18px;max-height:92vh;overflow-y:auto;
+  box-shadow:0 -6px 30px rgba(10,37,64,.3);animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(16px);opacity:.6}to{transform:translateY(0);opacity:1}}
+@media(min-width:620px){
+  .sheet{align-items:center}
+  .sheet-card{border-radius:4px;max-height:88vh}
+}
+.sheet-x{position:absolute;top:12px;right:12px;background:none;border:0;font-size:17px;
+  color:var(--stone);cursor:pointer;line-height:1;padding:6px}
+.sheet-x:focus-visible{outline:2px solid var(--buganvilla);outline-offset:2px}
+.sheet-card h3{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.02em;
+  margin:0 6px 8px 0;padding-right:26px;line-height:1.15}
+.sheet-sub{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--buganvilla);margin:0 0 8px}
+.sheet-map{position:relative;height:46vh;min-height:240px;background:#E7E9EC;border:1px solid var(--line);border-radius:3px;overflow:hidden;margin:12px 0 10px}
+.sheet-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.sheet-acts{display:flex;gap:8px;flex-wrap:wrap}
+.sheet-acts a{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  text-decoration:none;padding:9px 13px;border-radius:2px;border:1px solid var(--ink);color:var(--ink)}
+.sheet-acts a.primary{background:var(--ink);color:var(--cal)}
+.sheet-note{font-size:12px;color:var(--stone);margin:10px 0 0}
+body.locked{overflow:hidden}
+
 @media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
 </style>
 </head>
@@ -132,7 +177,7 @@ footer li{margin-bottom:5px}
   <div class="facts">
     <div><span>In</span>Mon 27 · FR5156 · 08:45</div>
     <div><span>Out</span>Mon 3 · FR5157 · 09:20</div>
-    <div><span>Base</span>Calle la Sierra, 428 m</div>
+    <div><span>Base</span>Mijas Pueblo, 428 m</div>
     <div><span>Sunset</span>~21:20 all week</div>
   </div>
 </header>
@@ -397,16 +442,92 @@ const BOARD=[
 ];
 
 /* ---------- render ---------- */
+/* Google snapshot, taken 25 Jul 2026: [rating, reviews, priceLevel, lat, lng, tel]
+   priceLevel 0 = Google has none. Ratings drift, so treat as a hint. */
+const INFO={
+"Zafir · CasaBlu":[5.0,53,0,36.5890341,-4.6457546,"+34952485608"],
+"Los Marinos José":[4.6,2032,3,36.5712776,-4.5907292,"+34952661012"],
+"Freiduría El Cenachero":[4.5,1151,1,36.5390429,-4.6185684,"+34952664367"],
+"Tomillo Limón":[4.6,1286,1,36.5973662,-4.6366592,"+34951437298"],
+"Pampa Tablas y Tapas":[4.7,987,2,36.5969993,-4.636896,"+34952590046"],
+"Koco Bistró":[4.6,2071,2,36.5967162,-4.6374007,"+34952486152"],
+"Restaurante La Reja":[4.5,1267,2,36.5953494,-4.6381157,"+34952591124"],
+"The Secret Garden":[4.3,1787,2,36.5953718,-4.6390835,"+34604423230"],
+"Viento Sur Brunch Café":[4.8,273,0,36.5949282,-4.638673,"+34952485672"],
+"Restaurante El Higuerón":[4.4,3494,3,36.5870167,-4.5996649,"+34652585787"],
+"Chupytira":[4.6,547,0,36.537396,-4.6233639,"+34622737649"],
+"Parque La Muralla and Paseo de la Muralla":[4.8,690,0,36.5931103,-4.6385533,""],
+"Mirador del Compás":[4.8,252,0,36.5953395,-4.6358648,""],
+"Los Tacos Málaga":[4.8,3920,1,36.7232669,-4.4201677,"+34614937478"],
+"La Taquería Méx":[4.7,1617,0,36.7244729,-4.4191266,"+34623579752"],
+"Itacate Taquería, Malagueta":[4.8,570,0,36.71969,-4.40869,"+34622567052"],
+"Bar La Tranca":[4.7,10189,1,36.7242405,-4.4210356,"+34615029669"],
+"Antigua Casa de Guardia":[4.6,10899,1,36.7178003,-4.4233936,"+34952214680"],
+"La Tasquita de en Medio":[4.7,23824,2,36.7225252,-4.4206605,"+34952065760"],
+"Los Marangós, Molina Lario":[4.8,11075,2,36.721111,-4.4202586,"+34952210661"],
+"Kraken Centro":[4.7,8965,0,36.7206429,-4.4219789,"+34952609662"],
+"Mercado Central de Atarazanas":[4.6,49328,1,36.718456,-4.4240713,"+34951926010"],
+"Alcazaba":[4.6,40706,0,36.7211348,-4.4158666,""],
+"Bardal · two Michelin stars":[4.8,537,3,36.7415641,-5.1665637,"+34951489828"],
+"El Lechuguita":[4.7,6484,1,36.741452,-5.1646101,"+34952878076"],
+"Pura Cepa":[4.6,515,0,36.7398574,-5.1656634,"+34951150329"],
+"Las Maravillas":[4.3,6964,2,36.742268,-5.165983,"+34666219462"],
+"Bar Frasquito, Setenil":[4.6,3696,1,36.8623182,-5.1784001,"+34695633250"],
+"La Cueva de Isabelina, Setenil":[4.4,533,0,36.8621675,-5.1781727,"+34722707741"],
+"Setenil de las Bodegas":[0,0,0,36.8639129,-5.1813038,""],
+"The walkway itself":[4.8,1273,0,36.9169256,-4.7732407,"+34620624028"],
+"Nasrid Palaces, night visit":[0,0,0,37.1771,-3.5883,""],
+"Mirador de San Nicolás":[4.7,81794,0,37.1811058,-3.5926637,""],
+"Parking Indigo, Alhambra":[3.9,1339,0,37.1716376,-3.5794848,"+34958226474"],
+"Bar La Riviera":[4.5,13293,1,37.177339,-3.597503,""],
+"La Buena Vida":[4.4,5017,1,37.1768732,-3.5972288,"+34654635797"],
+"Bar Ávila":[4.6,5553,1,37.1700083,-3.5990722,""],
+"Restaurante Carmen El Agua":[4.4,4029,2,37.1799806,-3.5930139,"+34958224356"],
+"El Rincón de Julio":[4.9,5530,2,37.1737173,-3.5984221,"+34615132930"],
+"La Telefónica":[4.9,11028,2,37.1745953,-3.599724,"+34958256220"],
+"Candeal":[4.9,286,0,36.5096998,-4.8821173,"+34608888006"],
+"Restaurante Skina · two stars":[4.4,306,0,36.5115375,-4.9013967,"+34604486303"],
+"Messina":[4.6,480,3,36.5083945,-4.8805895,"+34952864895"],
+"El Lago":[4.6,686,3,36.505871,-4.7792753,"+34952832371"],
+"Chiringuito Basilio":[4.6,1132,2,36.5073008,-4.8953707,"+34952865495"],
+"Trocadero Playa":[4.2,2993,3,36.505383,-4.913861,"+34610704144"],
+"Plaza de los Naranjos and the old town":[0,0,0,36.5100993,-4.8850214,""],
+"Casares":[4.5,1382,0,36.4435007,-5.2738146,""],
+"Los Abanicos, Benahavís":[4.7,1821,2,36.5235684,-5.0456016,"+34952855022"],
+"Karas Grill, Benahavís":[4.9,129,0,36.5245208,-5.046584,"+34604454165"],
+"Restaurante Sabor, Benahavís":[4.9,360,0,36.5239564,-5.0463846,"+34951549738"],
+"The Village, La Heredia":[5.0,69,0,36.5213981,-5.006158,"+34951694655"],
+"Charco de las Mozas, Benahavís":[4.6,167,0,36.5173583,-5.0400561,""],
+"Charco del Canalón, Istán":[4.5,92,0,36.5820871,-4.9488215,""],
+"Nacimiento del Río Molinos, Istán":[4.6,283,0,36.5780345,-4.940795,""],
+"Old Town Restaurant & Bar, Frigiliana":[4.8,580,0,36.7890338,-3.8952828,"+34624502343"],
+"Frigiliana old town":[4.7,353,0,36.7922061,-3.8977982,""],
+"Balcón de Europa":[0,0,0,36.7447025,-3.8758226,""]
+};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function chips(n){
+  const i=INFO[n]; if(!i) return "";
+  const out=[];
+  if(i[0]) out.push(`<span class="gchip star">★ ${i[0].toFixed(1)} <b>${i[1].toLocaleString("en-GB")}</b></span>`);
+  if(i[2]) out.push(`<span class="gchip">${"€".repeat(i[2])}</span>`);
+  return out.length?`<span class="gchips">${out.join("")}</span>`:"";
+}
+function mapBtn(n,url,label){
+  const i=INFO[n]||[];
+  const q = (i[3]!=null&&i[3]!==0) ? i[3]+","+i[4] : (url?decodeURIComponent(url.split("?q=")[1]||n).replace(/\+/g," "):n);
+  return `<button class="mapbtn" data-n="${esc(n)}" data-q="${esc(q)}" data-tel="${esc(i[5]||"")}" data-url="${esc(url||"")}">${label}</button>`;
+}
+
 let active=null;
 
 function foodCard(f){
   const shut = active && f.closed.includes(active);
   const shutTxt = f.closed.length ? "closed "+f.closed.map(c=>LABEL[c]).join(" + ") : "";
-  return `<div class="pick ${f.tier==="splurge"?"splurge":""} ${shut?"shut":""}" data-closed="${f.closed.join(",")}" data-shut="${shutTxt}">
-    <span class="tier">${f.tier}</span><strong>${f.n}</strong><p>${f.d}</p>
+  return `<div class="pick ${f.tier==="splurge"?"splurge":""} ${shut?"shut":""}" data-shut="${shutTxt}">
+    <span class="tier">${f.tier}${chips(f.n)}</span><strong>${f.n}</strong><p>${f.d}</p>
     ${f.meta?`<span class="meta">${f.meta}</span>`:""}
     ${f.closed.length?`<span class="meta">Closed ${f.closed.map(c=>LABEL[c]).join(", ")}</span>`:`<span class="meta">Open daily</span>`}
-    ${f.url?`<span class="meta"><a href="${f.url}" target="_blank" rel="noopener">Maps →</a></span>`:""}
+    ${mapBtn(f.n,f.url,"Map")}
   </div>`;
 }
 
@@ -418,9 +539,9 @@ function zoneCard(z){
     `<span class="badge count">${openCount} of ${z.food.length} kitchens open</span>`
   ].join("");
   const sights = z.sights.map(s=>`<li>
-      <span class="sname"><strong>${s.n}</strong><span class="hrs">${s.h}</span></span>
+      <span class="sname"><strong>${s.n}</strong><span class="hrs">${s.h}</span>${chips(s.n)}</span>
       <p>${s.d}</p>
-      ${s.url?`<a href="${s.url}" target="_blank" rel="noopener">Open in Maps →</a>`:""}
+      ${mapBtn(s.n,s.url,"Map")}
     </li>`).join("");
   return `<article class="zone" id="${z.id}">
     <button class="zhead" aria-expanded="false">
@@ -490,6 +611,54 @@ document.getElementById("copybtn").addEventListener("click", async e=>{
     setTimeout(()=>e.target.textContent="Copy Spanish booking text",1800);
   }catch{ e.target.textContent="Select the text above and copy it"; }
 });
+</script>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-back" data-close></div>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <button class="sheet-x" data-close aria-label="Close map">✕</button>
+    <p class="sheet-sub" id="sheetSub"></p>
+    <h3 id="sheetTitle"></h3>
+    <div class="sheet-map"><iframe id="sheetFrame" title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+    <div class="sheet-acts" id="sheetActs"></div>
+    <p class="sheet-note">Ratings and price levels are a Google snapshot from 25 July 2026. If the map area stays blank, your browser is blocking the embed: use Open in Google Maps.</p>
+  </div>
+</div>
+
+<script>
+const SHEET=document.getElementById("sheet");
+let lastFocus=null;
+
+function openSheet(b){
+  const n=b.dataset.n, q=b.dataset.q, tel=b.dataset.tel, url=b.dataset.url;
+  const i=INFO[n];
+  lastFocus=b;
+  document.getElementById("sheetTitle").textContent=n;
+  const bits=[];
+  if(i&&i[0]) bits.push("★ "+i[0].toFixed(1)+" from "+i[1].toLocaleString("en-GB")+" reviews");
+  if(i&&i[2]) bits.push("€".repeat(i[2]));
+  document.getElementById("sheetSub").textContent=bits.join("  ·  ");
+  document.getElementById("sheetFrame").src=
+    "https://www.google.com/maps?q="+encodeURIComponent(q)+"&z=16&hl=en&output=embed";
+  const acts=[`<a class="primary" href="${url||"https://maps.google.com/?q="+encodeURIComponent(q)}" target="_blank" rel="noopener">Open in Google Maps</a>`];
+  acts.push(`<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}" target="_blank" rel="noopener">Directions</a>`);
+  if(tel) acts.push(`<a href="tel:${tel}">Call</a>`);
+  document.getElementById("sheetActs").innerHTML=acts.join("");
+  SHEET.hidden=false;
+  document.body.classList.add("locked");
+  SHEET.querySelector(".sheet-x").focus();
+}
+function closeSheet(){
+  SHEET.hidden=true;
+  document.getElementById("sheetFrame").src="about:blank";
+  document.body.classList.remove("locked");
+  if(lastFocus) lastFocus.focus();
+}
+document.addEventListener("click", e=>{
+  const b=e.target.closest(".mapbtn");
+  if(b){ openSheet(b); return; }
+  if(e.target.closest("[data-close]")) closeSheet();
+});
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !SHEET.hidden) closeSheet(); });
 </script>
 </body>
 </html>
