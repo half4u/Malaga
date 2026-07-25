@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mijas Base Camp · zones, options, closing days</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A2540; --azul:#17559B; --buganvilla:#CE2B6D; --sol:#F5B32C;
+  --cal:#F6F5F1; --stone:#7C8CA0; --line:#D8D6CE; --shadow:rgba(10,37,64,.14);
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+body{background:var(--cal);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--azul)}
+.wrap{max-width:840px;margin:0 auto;padding:0 18px 96px}
+
+.mast{padding:30px 0 20px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--buganvilla);margin:0 0 10px}
+.mast h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,10vw,60px);line-height:.94;letter-spacing:-.03em;margin:0 0 14px}
+.mast h1 em{font-style:normal;color:var(--azul)}
+.mast p{margin:0;max-width:56ch;color:#2C4460}
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 18px;margin-top:20px;font-family:var(--mono);font-size:12px;line-height:1.4}
+.facts div span{display:block;color:var(--stone);letter-spacing:.08em;text-transform:uppercase;font-size:10px}
+@media(min-width:620px){.facts{grid-template-columns:repeat(4,1fr)}}
+
+/* sticky day filter */
+.filter{position:sticky;top:0;z-index:30;background:var(--cal);border-bottom:1px solid var(--line);margin:0 -18px;padding:10px 18px 11px}
+.filter-lab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);margin:0 0 7px}
+.dayrow{display:flex;gap:5px;flex-wrap:wrap}
+.dbtn{font-family:var(--mono);font-size:11px;letter-spacing:.06em;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:6px 9px;border-radius:2px;cursor:pointer;min-width:42px}
+.dbtn[aria-pressed="true"]{background:var(--ink);color:var(--cal)}
+.dbtn.reset{border-style:dashed;color:var(--stone);border-color:var(--stone)}
+.dbtn:focus-visible{outline:2px solid var(--buganvilla);outline-offset:2px}
+
+h2.sec{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.02em;margin:42px 0 4px}
+.sec-note{margin:0 0 18px;color:var(--stone);font-size:14px;max-width:60ch}
+
+/* week grid */
+table.week{width:100%;border-collapse:collapse;font-size:14px}
+table.week th,table.week td{text-align:left;padding:10px 8px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.week th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);font-weight:500}
+table.week td.d{font-family:var(--mono);font-size:12px;color:var(--buganvilla);white-space:nowrap;font-weight:500}
+table.week td.z{font-weight:600}
+table.week td.z a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--buganvilla)}
+table.week td.alt{color:var(--stone);font-size:13px}
+table.week tr.anchor td{background:#FFFAFC}
+
+/* zone card */
+.zone{background:#fff;border:1px solid var(--line);border-radius:3px;margin-bottom:16px;box-shadow:0 1px 0 var(--shadow);overflow:hidden;scroll-margin-top:120px}
+.zhead{width:100%;text-align:left;background:none;border:0;padding:18px;cursor:pointer;font:inherit;color:inherit;display:block}
+.zhead:focus-visible{outline:2px solid var(--buganvilla);outline-offset:-3px}
+.chev{float:right;font-family:var(--mono);font-size:12px;color:var(--stone);transition:transform .18s}
+.zone.open .chev{transform:rotate(180deg)}
+.zbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px;align-items:center}
+.badge{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:2px;background:#EDEFF3;color:#3A5474}
+.badge.anchor{background:#FCEEF3;color:var(--buganvilla)}
+.badge.near{background:#E8F1E9;color:#2F6B45}
+.badge.count{background:var(--ink);color:var(--cal)}
+.zhead h3{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.1;letter-spacing:-.02em;margin:0 0 6px}
+.pitch{margin:0 0 12px;color:#2C4460;font-size:15px}
+.metrics{display:flex;gap:16px;font-family:var(--mono);font-size:11px;color:var(--stone);letter-spacing:.04em;flex-wrap:wrap}
+
+.zbody{display:none;padding:0 18px 20px;border-top:1px solid var(--line)}
+.zone.open .zbody{display:block}
+h4.sub{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--buganvilla);margin:20px 0 10px;padding-top:14px;border-top:1px dotted var(--line)}
+h4.sub:first-child{border-top:0;padding-top:0;margin-top:18px}
+h4.sub em{font-style:normal;color:var(--stone);text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12px;margin-left:6px}
+
+ul.sights{list-style:none;margin:0;padding:0}
+ul.sights li{padding:10px 0;border-bottom:1px dotted var(--line)}
+ul.sights li:last-child{border-bottom:0}
+.sname{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.sname strong{font-weight:600;font-size:15px}
+.hrs{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--stone);text-transform:uppercase}
+ul.sights p{margin:3px 0 0;font-size:14px;color:#42596F}
+ul.sights a{font-family:var(--mono);font-size:11px;text-decoration:none;border-bottom:1px solid currentColor;display:inline-block;margin-top:5px}
+
+.food{display:grid;gap:10px}
+@media(min-width:620px){.food{grid-template-columns:1fr 1fr}}
+.pick{border:1px solid var(--line);border-radius:3px;padding:12px;background:#FCFCFA;position:relative}
+.pick .tier{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px}
+.pick.splurge{border-color:var(--buganvilla);background:#FFFAFC}
+.pick.splurge .tier{color:var(--buganvilla)}
+.pick strong{display:block;font-size:15px;font-weight:600;line-height:1.25}
+.pick p{margin:5px 0 0;font-size:13.5px;color:#42596F}
+.meta{font-family:var(--mono);font-size:11px;color:var(--stone);margin-top:7px;display:block;line-height:1.7}
+.meta a{color:var(--azul);text-decoration:none;border-bottom:1px solid var(--line)}
+.pick.shut{opacity:.42}
+.pick.shut::after{
+  content:attr(data-shut);position:absolute;top:10px;right:10px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--ink);color:var(--cal);padding:2px 5px;border-radius:2px
+}
+.warn{background:#FDF2DC;border-left:3px solid var(--sol);padding:10px 12px;font-size:14px;margin:16px 0 0;border-radius:0 2px 2px 0}
+.warn strong{font-weight:600}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:3px;padding:18px;box-shadow:0 1px 0 var(--shadow)}
+.panel h3{font-family:var(--display);font-weight:700;font-size:19px;margin:0 0 8px;letter-spacing:-.02em}
+.panel p{margin:0 0 12px;font-size:14.5px;color:#2C4460}
+ol.plays{margin:0;padding-left:20px;font-size:14.5px}
+ol.plays li{margin-bottom:9px;color:#2C4460}
+ol.plays b{color:var(--ink)}
+table.board{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+table.board th,table.board td{text-align:left;padding:9px 8px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.board th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);font-weight:500}
+table.board td.when{font-family:var(--mono);font-size:12px;color:var(--buganvilla);white-space:nowrap}
+.copy{border:1px solid var(--ink);border-radius:3px;padding:14px;background:#fff;margin-top:14px}
+.copy p{margin:0 0 10px;font-size:14.5px;font-style:italic;color:#243A52}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--cal);border:0;padding:9px 14px;border-radius:2px;cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--buganvilla);outline-offset:2px}
+footer{margin-top:46px;padding-top:18px;border-top:2px solid var(--ink);font-size:13px;color:var(--stone)}
+footer ul{padding-left:18px;margin:8px 0 0}
+footer li{margin-bottom:5px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Mijas Pueblo · Mon 27 Jul → Mon 3 Aug · 4 pax · 1 car</p>
+  <h1>Eight zones.<br>Pick one a day.<br><em>Check what's open first.</em></h1>
+  <p>Landing at 08:45 buys you a whole extra day, and leaving at 09:20 costs you the last one. That leaves six and a half usable days for eight zones, so this is a menu rather than a schedule. Each zone has more sights and more restaurants than you can use, at three price tiers, with every closing day recorded.</p>
+  <div class="facts">
+    <div><span>In</span>Mon 27 · FR5156 · 08:45</div>
+    <div><span>Out</span>Mon 3 · FR5157 · 09:20</div>
+    <div><span>Base</span>Calle la Sierra, 428 m</div>
+    <div><span>Sunset</span>~21:20 all week</div>
+  </div>
+</header>
+
+<div class="filter">
+  <p class="filter-lab">Which day is it? Closed places grey out.</p>
+  <div class="dayrow" id="dayrow"></div>
+</div>
+
+<h2 class="sec">A week that works</h2>
+<p class="sec-note">Zafir is dinner only and it is in Mijas, so Friday is now a home day and Granada slides back to Thursday with a night in the city. That sequence also hands you Friday afternoon at the pool between the Alhambra and a tasting menu, which is the best accident in this plan. Pink rows have real constraints; the rest swap freely.</p>
+<table class="week">
+  <thead><tr><th>Day</th><th>Zone</th><th>Instead</th></tr></thead>
+  <tbody id="week"></tbody>
+</table>
+
+<h2 class="sec">The zones</h2>
+<p class="sec-note">Tap to open. Sights are a pick list, not a route: choose two or three and leave the rest. Food is tiered so nobody has to eat at the wrong price point.</p>
+<div id="zones"></div>
+
+<h2 class="sec">Alhambra: how to actually get in</h2>
+<div class="panel">
+  <h3>You are booking three days out for the hardest ticket in Spain</h3>
+  <p>The Nasrid Palaces admit 300 people per half hour slot, and the standing advice for July and August is to book six to eight weeks ahead. General tickets (~€19–22, covering Nasrid Palaces, Alcazaba and Generalife) are very likely gone for your window. Three routes are still realistic.</p>
+  <ol class="plays">
+    <li><b>Nasrid Palaces by night</b> — Tuesday to Saturday, 22:00–23:30 in summer, around €9. Less contested than daytime, and in a 38 °C week it is the better visit anyway.</li>
+    <li><b>Generalife and Alcazaba only</b> — around €10–13, no Nasrid Palaces, sells out later than the general ticket. Combine with a night visit and you have reassembled the full ticket.</li>
+    <li><b>A guided tour holding pre-booked entry</b> — GetYourGuide, Civitatis, Viator. €30–60 per person, a real markup, but they have space when the official site shows none.</li>
+  </ol>
+  <p style="margin-bottom:0">Official site only: <a href="https://tickets.alhambra-patronato.es" target="_blank" rel="noopener">tickets.alhambra-patronato.es</a>. Cancellations get released, so check more than once today. Passports are scanned at every entry point and names must match, so buy in all four names.</p>
+</div>
+
+<h2 class="sec">Book today, in this order</h2>
+<table class="board">
+  <thead><tr><th>What</th><th>Priority</th><th>How</th></tr></thead>
+  <tbody id="board"></tbody>
+</table>
+
+<div class="copy">
+  <p id="es">Buenas tardes. Quería reservar una mesa para cuatro personas el viernes a las 21:00, a nombre de Marko. ¿Tienen disponibilidad? Muchas gracias.</p>
+  <button class="btn" id="copybtn">Copy Spanish booking text</button>
+</div>
+
+<footer>
+  <strong>Things that will bite you</strong>
+  <ul>
+    <li>Monday 27th: you land at 08:45 having been awake since about 03:30, and the Airbnb almost certainly will not let you in before 15:00 or 16:00. Plan a beach and a long breakfast, nothing else.</li>
+    <li>Monday 3rd: a 09:20 departure means leaving the house around 06:00 and returning the car by 07:00. Arrange the key handover with the host in advance and pack on Saturday.</li>
+    <li>Do not let the sat nav take you into Mijas old town. Park on Avenida Virgen de la Peña and walk.</li>
+    <li>Kitchens close 16:00 to 19:00 or 20:00. Miss lunch and you genuinely wait.</li>
+    <li>Monday and Sunday are the big closing days. Use the filter at the top of this page before you drive anywhere for dinner.</li>
+    <li>Drive times are estimates without traffic. Add 20 minutes on the coast road on Friday and Saturday evenings.</li>
+    <li>Hours and numbers checked late July 2026. Kitchens change their minds, so ring the day before.</li>
+  </ul>
+</footer>
+
+</div>
+
+<script>
+const DAYS=["mon","tue","wed","thu","fri","sat","sun"];
+const LABEL={mon:"Mon",tue:"Tue",wed:"Wed",thu:"Thu",fri:"Fri",sat:"Sat",sun:"Sun"};
+
+const WEEK=[
+  {d:"Mon 27", z:"Home hill", zid:"home", alt:"Nothing else. You have been up since 03:30.", anchor:false},
+  {d:"Tue 28", z:"Caminito del Rey", zid:"caminito", alt:"Swap with Saturday if the slot says so", anchor:true},
+  {d:"Wed 29", z:"Ronda + Setenil", zid:"ronda", alt:"Bardal is Wed–Fri, and Fri is now taken", anchor:true},
+  {d:"Thu 30", z:"Granada, sleep there", zid:"granada", alt:"Night visit runs Tue–Sat", anchor:true},
+  {d:"Fri 31", z:"Drive back, pool, Zafir 20:00", zid:"home", alt:"Fixed point. Everything bends around it.", anchor:true},
+  {d:"Sat 1", z:"Málaga city", zid:"malaga", alt:"Market open Sat, shut Sun", anchor:false},
+  {d:"Sun 2", z:"Cold water, then pack", zid:"agua", alt:"Or Marbella old town in the evening", anchor:false},
+  {d:"Mon 3", z:"06:00 out the door", zid:"home", alt:"No day. Sorry.", anchor:false}
+];
+
+const ZONES=[
+  {
+    id:"home", name:"Home hill: Mijas Pueblo, Fuengirola", drive:"0–15 min", dist:"0–10 km",
+    tags:["near"], when:"Any day. The default when nobody wants to drive.",
+    pitch:"You are living in the postcard, and the coast is eight minutes downhill. This is the zone for arrival day, departure eve, and every afternoon that got too hot to have a plan.",
+    trap:"Tomillo Limón, Koco and Pampa all close Monday and Sunday. La Reja closes Tuesday. El Higuerón closes Monday and does Sunday lunch only. Between them you are covered every night, but check the filter first.",
+    sights:[
+      {n:"Parque La Muralla and Paseo de la Muralla", h:"free · 24 h", d:"Botanical terraces along the old wall, benches facing the whole western Costa del Sol. Best sunset within walking distance of the front door, and the sun goes down about 21:20 all week.", url:"https://maps.google.com/?q=Parque+La+Muralla+Mijas"},
+      {n:"Mirador del Compás", h:"free", d:"Shaded garden terrace mid slope with a bar and a view to the sea. The lanes off it, Calle Muros especially, are where the photographs are.", url:"https://maps.google.com/?q=Mirador+del+Compás+Mijas"},
+      {n:"Mijas old town, early or late", h:"free", d:"Whitewashed lanes, a small bullring, the ceramic name-plate shops. Two metres wide in places, so walk it before 11:00 or after 19:00."},
+      {n:"Fuengirola fishing harbour", h:"free", d:"Working port with the auction hall, ten minutes down the hill. The reason to come is the food, not the marina.", url:"https://maps.google.com/?q=Puerto+de+Fuengirola"},
+      {n:"Castillo Sohail, Fuengirola", h:"~€3", d:"Tenth century Moorish fort on a headland above the river mouth, with concerts in the courtyard through summer.", url:"https://maps.google.com/?q=Castillo+Sohail+Fuengirola"},
+      {n:"Beaches: La Cala de Mijas or Carvajal", h:"free", d:"La Cala is the quieter, more local end with chiringuitos along the front. Carvajal has the cleanest water and a train station if anyone wants to drink."}
+    ],
+    food:[
+      {n:"Zafir · CasaBlu", tier:"splurge", closed:[], d:"Booked for Friday. Chef Julio does contemporary Andalusí cooking, Moorish heritage read through modern technique, and the format is unusual: the evening opens with a tasting of three seasonal ingredients, this season breva fig, red plum and peach, and you pick which one runs through your starter, main and dessert. 5.0 across 53 reviews, terrace views, and it is 1.5 km from the house. Ask for a table around 20:15 so you are sitting down for the sunset.", meta:"Mijas · 19:00–23:30 daily · +34 952 48 56 08", url:"https://maps.google.com/?q=Zafir+Restaurant+Mijas"},
+      {n:"Los Marinos José", tier:"splurge", closed:["mon"], d:"Pick your fish off the ice at the door, they barely cook it, and it is routinely called the best seafood restaurant in Spain. Red mullet sashimi, huge prawns, whatever landed that morning. Books weeks ahead. €10 cash parking nearby.", meta:"Fuengirola · 13:00–16:00, 19:30–22:30 · +34 952 66 10 12", url:"https://maps.google.com/?q=Los+Marinos+Jose+Fuengirola"},
+      {n:"Freiduría El Cenachero", tier:"street", closed:["mon"], d:"Inside the fishing harbour beside the auction hall. Fried calamaritos, whole grilled fish, locals at every table, prices from a previous decade. English and German both fine.", meta:"Fuengirola · 13:00–16:30, 20:00–23:30 · +34 952 66 43 67", url:"https://maps.google.com/?q=Freiduria+El+Cenachero+Fuengirola"},
+      {n:"Tomillo Limón", tier:"mid", closed:["mon","sun"], d:"Best value in the village. Creative, vegetable forward, price level one, 4.6 from nearly 1,300 people. Book or be turned away.", meta:"Mijas Pueblo · 12:00–23:00 · +34 951 43 72 98", url:"https://maps.google.com/?q=Tomillo+Limon+Mijas"},
+      {n:"Pampa Tablas y Tapas", tier:"mid", closed:["mon","sun"], d:"4.7 from a thousand reviews, short menu done properly, service people write paragraphs about. Two minutes from the house.", meta:"Mijas Pueblo · 13:00–22:30 · +34 952 59 00 46", url:"https://maps.google.com/?q=Pampa+Tablas+y+Tapas+Mijas"},
+      {n:"Koco Bistró", tier:"mid", closed:["mon","sun"], d:"Plaza Virgen de la Peña. Creative tapas, generous mains, plating well above the village average, 4.6 from 2,000 reviews. Reserve.", meta:"Mijas Pueblo · 12:30–22:45 · +34 952 48 61 52", url:"https://maps.google.com/?q=Koco+bistro+Mijas"},
+      {n:"Restaurante La Reja", tier:"mid", closed:["tue"], d:"Steakhouse and traditional Andalusian with a terrace over the plaza. Paella better than a tourist spot has any right to be, lots of gluten free. The Monday night answer.", meta:"Mijas Pueblo · 12:30–23:00 · +34 952 59 11 24", url:"https://maps.google.com/?q=Restaurante+La+Reja+Mijas"},
+      {n:"The Secret Garden", tier:"mid", closed:[], d:"Courtyard hidden down a side alley, Argentinian grill, cocktails. Open daily but the kitchen stops at 21:30, which is early for here.", meta:"Mijas Pueblo · 12:30–21:30 · +34 604 42 32 30", url:"https://maps.google.com/?q=The+Secret+Garden+Mijas"},
+      {n:"Viento Sur Brunch Café", tier:"street", closed:[], d:"Courtyard with a lemon tree, 4.8, fresh juices and a proper burger. The fix for anyone who cannot face a tostada at 11:00. Daytime only.", meta:"Mijas Pueblo · 10:00–18:00", url:"https://maps.google.com/?q=Viento+Sur+Brunch+Mijas"},
+      {n:"Restaurante El Higuerón", tier:"splurge", closed:["mon"], d:"Terrace above Fuengirola with the whole bay in front of it. Book for 30 minutes before sunset or you have paid for a view you cannot see. Sunday is lunch only.", meta:"Fuengirola · 13:00–24:00, Sun 12:30–18:00 · +34 652 58 57 87", url:"https://maps.google.com/?q=Restaurante+El+Higueron"},
+      {n:"Chupytira", tier:"street", closed:[], d:"One street back from the seafront promenade, all fish and seafood, small plates. Pulpo on potato, gambas al pil pil, boquerones. Open every day, which makes it the Monday and Sunday backstop.", meta:"Fuengirola · 13:00–23:00 · +34 622 73 76 49", url:"https://maps.google.com/?q=Chupytira+Fuengirola"}
+    ]
+  },
+  {
+    id:"malaga", name:"Málaga city", drive:"~35 min", dist:"~35 km on the AP-7",
+    tags:["anchor"], when:"Any day except Sunday, when the market shuts.",
+    pitch:"Fish market at ten in the morning with a beer, a Moorish fortress on the hill, Picasso where he was born, and the best cheap eating of the week. This is the zone with the most options and the least driving.",
+    trap:"Mercado Atarazanas is 09:00–14:00 and closed Sunday. The Alcazaba shuts at 18:00. Park in a centro underground car park once and walk everything; the old town is small.",
+    sights:[
+      {n:"Mercado Central de Atarazanas", h:"09:00–14:00 · closed Sun", d:"Iron and glass hall built around a surviving Nasrid marble gate. Buy jamón, turrón, saffron and spices inside, then eat fried fish and prawns standing at the stalls outside. Cash is faster.", url:"https://maps.google.com/?q=Mercado+de+Atarazanas+Malaga"},
+      {n:"Alcazaba", h:"€7.50 · 09:00–18:00", d:"About an hour, steep and uneven. Upper terraces give you the port, the coast and the Roman theatre below. 4.6 from 40,000 people and worth every one of them.", url:"https://maps.google.com/?q=Alcazaba+Malaga"},
+      {n:"Castillo de Gibralfaro", h:"€3.50", d:"The fortress above the Alcazaba, connected by a walled walkway. Add it only if legs and temperature both allow.", url:"https://maps.google.com/?q=Castillo+de+Gibralfaro"},
+      {n:"Museo Picasso Málaga", h:"~€12", d:"In a 16th century palace five minutes from the cathedral, and air conditioned, which on a 38 °C afternoon is a legitimate reason to go.", url:"https://maps.google.com/?q=Museo+Picasso+Malaga"},
+      {n:"Centre Pompidou Málaga", h:"~€9", d:"The glass cube on the port. Small, sharp, and rarely crowded compared with the Picasso.", url:"https://maps.google.com/?q=Centre+Pompidou+Malaga"},
+      {n:"Pedregalejo and El Palo", h:"free", d:"Old fishing quarters east of the centre, low white houses and a line of chiringuitos. This is where the city actually eats espetos, and it beats the central beach.", url:"https://maps.google.com/?q=Pedregalejo+Malaga"},
+      {n:"La Malagueta beach", h:"free", d:"City beach, walkable from the centro, showers and loungers. The shade strategy for the worst two hours of the day."}
+    ],
+    food:[
+      {n:"Los Tacos Málaga", tier:"street", closed:[], d:"Calle Casapalma. Chicken tacos just under €2, beef birria just under €3, 4.8 from nearly 4,000 reviews. Opens 13:30.", meta:"13:30–16:30, 19:00–24:00 · +34 614 93 74 78", url:"https://maps.google.com/?q=Los+Tacos+Málaga+Casapalma"},
+      {n:"La Taquería Méx", tier:"street", closed:[], d:"Plaza de Jerónimo Cuervo. Tacos from about €1.50, cheap margaritas, and service people write home about.", meta:"13:00–16:30, 19:00–23:45 · +34 623 57 97 52", url:"https://maps.google.com/?q=La+Taquería+Méx+Malaga"},
+      {n:"Itacate Taquería, Malagueta", tier:"street", closed:["mon","wed"], d:"Best birria of the three, near the beach rather than in the centro. Mushroom taco is the sleeper. Closed Monday and Wednesday.", meta:"13:30–16:30, 19:00–22:30 · +34 622 56 70 52", url:"https://maps.google.com/?q=Itacate+Taqueria+Malagueta"},
+      {n:"Bar La Tranca", tier:"street", closed:[], d:"Standing room, vermouth from the barrel, oxtail, bill chalked on the bar. Loud and local despite the guidebooks. Open until 01:00 every day.", meta:"12:00–01:00 · +34 615 02 96 69", url:"https://maps.google.com/?q=Bar+La+Tranca+Malaga"},
+      {n:"Antigua Casa de Guardia", tier:"street", closed:[], d:"1840, no seats, ten sweet Málaga wines poured from casks along the wall, bill chalked on the wood. Order the Pajarete. Come for the wine, not the food. Sunday to 15:00 only.", meta:"11:30–22:00 · Alameda Principal", url:"https://maps.google.com/?q=Antigua+Casa+de+Guardia+Malaga"},
+      {n:"La Tasquita de en Medio", tier:"mid", closed:[], d:"Calderería. Open straight through the afternoon, huevos rotos and paella at prices that make no sense for the location. The one that saves you when every other kitchen has shut.", meta:"12:00–01:00 · +34 952 06 57 60", url:"https://maps.google.com/?q=La+Tasquita+de+en+Medio+Malaga"},
+      {n:"Los Marangós, Molina Lario", tier:"mid", closed:[], d:"Beside the cathedral, 4.8 from 11,000 reviews, and the paella people actually rave about. Expect a wait after 21:00 in July.", meta:"12:30–23:00 · +34 952 21 06 61", url:"https://maps.google.com/?q=Los+Marangos+Molina+Lario"},
+      {n:"Kraken Centro", tier:"mid", closed:[], d:"Plaza de las Flores. Modern tapas, roast chicken with couscous, guacamole with chipotle mayo. Some say a touch salty; the terrace makes up for it.", meta:"12:30–23:30 · +34 952 60 96 62", url:"https://maps.google.com/?q=Kraken+Centro+Malaga"},
+      {n:"Espeto de sardinas, Pedregalejo", tier:"street", closed:[], d:"Six sardines skewered on a cane and grilled over a boat full of burning olive wood, about €5. Any chiringuito with a smoking boat out front. This is the single most local thing you can eat all week."}
+    ]
+  },
+  {
+    id:"ronda", name:"Ronda and the Serranía", drive:"~1 h 20", dist:"~95 km via the A-397",
+    tags:["anchor"], when:"Wed, Thu or Fri if you want Bardal. Out by 08:00 either way.",
+    pitch:"A town split by a 120 m gorge, a village wedged under an overhanging cliff, Roman ruins nobody visits, and the neatest solution to the budget question all week: two star tasting menu and €1.50 tapas nine minutes apart.",
+    trap:"Bardal serves Wednesday to Friday only. In Setenil, Bar Frasquito shuts at 17:00 most days and both cave-street places close Tuesday. Ronda at 15:00 in August is 38 °C, so mornings only.",
+    sights:[
+      {n:"Puente Nuevo and Alameda del Tajo", h:"free", d:"Walk the bridge before the coaches land, then the cliff terrace where the drop goes straight down into the Serranía.", url:"https://maps.google.com/?q=Puente+Nuevo+Ronda"},
+      {n:"Plaza de Toros", h:"~€9", d:"Spain's oldest bullring, plus the museum and the stables. Twenty minutes unless you care.", url:"https://maps.google.com/?q=Plaza+de+Toros+Ronda"},
+      {n:"Baños Árabes", h:"~€5", d:"Thirteenth century Arab baths at the bottom of the gorge, the best preserved in Spain, and cool inside in both senses.", url:"https://maps.google.com/?q=Baños+Arabes+Ronda"},
+      {n:"The far side of the gorge", h:"free", d:"Cross the bridge and walk the lanes on the south side. Almost nobody does, and it is where the town still feels like a town."},
+      {n:"Setenil de las Bodegas", h:"free · 30 min from Ronda", d:"Whole streets roofed by a single slab of overhanging rock, with bars underneath it. Late afternoon is right: the overhang is finally in shade and the day trippers have gone.", url:"https://maps.google.com/?q=Setenil+de+las+Bodegas"},
+      {n:"Acinipo", h:"free · check days", d:"A Roman theatre on a hilltop 20 km out, still used, and usually empty. Opening days are erratic, so treat it as a bonus rather than a plan.", url:"https://maps.google.com/?q=Acinipo+Ronda"},
+      {n:"Ronda wine country", h:"tastings ~€15", d:"Two dozen small bodegas in the hills around the town, most needing a call ahead. Good alternative to Setenil if the group prefers sitting down."}
+    ],
+    food:[
+      {n:"Bardal · two Michelin stars", tier:"splurge", closed:["mon","tue","sat","sun"], d:"Benito Gómez. Tasting menu only, lunch from 13:15, roughly €300 a head with wine. Wednesday to Friday only, and that single fact decides which day you do Ronda.", meta:"Wed–Fri · 13:15–17:00, 20:00–24:00 · +34 951 48 98 28", url:"https://maps.google.com/?q=Bardal+Ronda"},
+      {n:"El Lechuguita", tier:"street", closed:["mon","sun"], d:"Tapas at €1.50, ordered by ticking a paper slip at the bar. Tight seating, 6,000 reviews at 4.7, morcilla that converts sceptics. Nine minutes' walk from Bardal's door.", meta:"12:30–16:00, 20:00–23:00 · +34 952 87 80 76", url:"https://maps.google.com/?q=El+Lechuguita+Ronda"},
+      {n:"Pura Cepa", tier:"mid", closed:[], d:"Wine bar with a terrace on Calle Tenorio. Oxtail brioche, t-bone croquetas, goat cheese and mango salad, proper espresso. Open straight through, every day, which in Ronda is rare.", meta:"08:30–24:00 · +34 951 15 03 29", url:"https://maps.google.com/?q=Pura+Cepa+Ronda"},
+      {n:"Las Maravillas", tier:"mid", closed:[], d:"Carrera Espinel, dead central, Ronda-style steak and good gazpacho at fair prices. Understaffed when busy, so not the choice if anyone is impatient.", meta:"11:30–23:30 · +34 666 21 94 62", url:"https://maps.google.com/?q=Restaurante+Las+Maravillas+Ronda"},
+      {n:"Bar Frasquito, Setenil", tier:"street", closed:["tue"], d:"In the cave street itself, under the rock. Iberian mixed grill for two that feeds four, ham croquetas, huge portions, about €35 with sangria. Closes 17:00 except Friday and Saturday.", meta:"08:00–17:00 · Fri/Sat also 20:00–24:00 · +34 695 63 32 50", url:"https://maps.google.com/?q=Bar+Frasquito+Setenil"},
+      {n:"La Cueva de Isabelina, Setenil", tier:"mid", closed:["tue"], d:"Just outside the overhang with a view of it instead of a table underneath. Carabinero croquetas, good cheesecake. Evenings from 18:30, which fits the drive.", meta:"18:30–24:00 · +34 722 70 77 41", url:"https://maps.google.com/?q=La+Cueva+de+Isabelina+Setenil"}
+    ]
+  },
+  {
+    id:"caminito", name:"Caminito del Rey and the lakes", drive:"~1 h 05", dist:"~80 km to Ardales",
+    tags:["anchor"], when:"Tue to Sun, earliest slot you can get. Never Monday.",
+    pitch:"A 7.7 km catwalk bolted to the wall of a gorge, a hundred metres above a turquoise river, then three reservoirs in the middle of nowhere to swim off the adrenaline.",
+    trap:"€10 official tickets sell out weeks ahead in July and it is closed Mondays. No shade at all on the boardwalk. Children under eight are not allowed.",
+    sights:[
+      {n:"The walkway itself", h:"€10 · 2–3 h", d:"Park at the north access near Ardales, take the €2.50 shuttle, be at the gate 30 minutes before your slot. Helmets handed out, one way route, exit at El Chorro. Trainers, hat, two litres of water each.", url:"https://maps.google.com/?q=El+Caminito+del+Rey+Ardales"},
+      {n:"Guadalhorce lakes", h:"free", d:"Ten minutes from the exit. Three reservoirs, turquoise, largely empty, and the reason to bring towels.", url:"https://maps.google.com/?q=Embalse+del+Conde+de+Guadalhorce"},
+      {n:"Mirador del Gaitanejo", h:"free", d:"Roadside viewpoint over the dam and the entrance to the gorge. Two minutes, worth stopping."},
+      {n:"Bobastro", h:"~€3", d:"Ruins of a ninth century rebel stronghold carved into the rock above El Chorro, including a church cut straight out of the cliff. Ten minutes from the exit and almost nobody goes."},
+      {n:"Álora", h:"free", d:"White town with a castle on the way home, and ventas along the road doing menú del día for €12–15 until about 15:30.", url:"https://maps.google.com/?q=Alora+Malaga"}
+    ],
+    food:[
+      {n:"El Kiosco, El Chorro", tier:"street", closed:[], d:"At the shuttle stop by the exit. Not a destination, but cold beer and a plate of something the moment you finish, which is exactly what you will want.", url:"https://maps.google.com/?q=El+Kiosko+El+Chorro"},
+      {n:"Ventas around Álora and Ardales", tier:"street", closed:[], d:"Roadside menú del día, €12–15 for three courses and wine, served until about 15:30. Nothing to book and nothing famous. The correct post-gorge lunch."},
+      {n:"Save the evening for the village", tier:"mid", closed:[], d:"You will have walked 8 km in the heat before lunch. Book Koco or Pampa in Mijas for 21:00 and write the afternoon off to the pool."}
+    ]
+  },
+  {
+    id:"granada", name:"Granada and the Alhambra", drive:"~1 h 50", dist:"~155 km via the A-45 and A-92",
+    tags:["anchor"], when:"Tue to Sat for a night visit. Leave Mijas after lunch.",
+    pitch:"Leave at 14:30 so the drive eats the worst heat of the day. Albaicín once the lanes go into shade, the Alhambra floodlit from across the valley, free tapas because that is the local law, and the palaces at 22:00 with no queue.",
+    trap:"Night visits run Tuesday to Saturday, 22:00–23:30. You must enter the Nasrid Palaces within 30 minutes of the time on the ticket and latecomers are refused. Decide in advance whether someone drives home at midnight or you book a hotel night.",
+    sights:[
+      {n:"Nasrid Palaces, night visit", h:"~€9 · 22:00–23:30 · Tue–Sat", d:"Carved stucco and geometric ceilings under warm light, in a fraction of the crowd. Be in the queue 20 minutes early with passports.", url:"https://maps.google.com/?q=Alhambra+Granada"},
+      {n:"Mirador de San Nicolás", h:"free", d:"The view: Alhambra opposite, Sierra Nevada behind it, sunset about 21:20 and floodlights straight after. Packed, with a guitarist. Go anyway, and taxi up then walk down.", url:"https://maps.google.com/?q=Mirador+de+San+Nicolás+Granada"},
+      {n:"Albaicín", h:"free", d:"The old Moorish quarter on a street plan that predates the reconquest. Walled gardens, cisterns, lanes narrow enough to stay shaded. Wear something you can climb in."},
+      {n:"Generalife and Alcazaba", h:"~€10–13", d:"The summer palace gardens and the fortress. Sells out later than the general ticket, so this is the fallback that still gets you inside the walls.", url:"https://maps.google.com/?q=Generalife+Granada"},
+      {n:"Capilla Real and the Alcaicería", h:"~€6", d:"Ferdinand and Isabella's tomb, then the narrow silk market lanes beside the cathedral. Good Saturday morning before the drive back."},
+      {n:"Sacromonte", h:"free · caves ~€5", d:"Cave houses on the hill beyond the Albaicín, and the flamenco is the real thing rather than the coastal version. Zambra shows start late."},
+      {n:"Parking Indigo, Alhambra", h:"~€10 / 4 h · 24 h", d:"Open all night, minutes from the monument entrance. Park once, taxi down to the Albaicín, walk or taxi back up for the night slot.", url:"https://maps.google.com/?q=Parking+Indigo+Granada+Alhambra"}
+    ],
+    food:[
+      {n:"Bar La Riviera", tier:"street", closed:[], d:"Calle Cetti Meriem near Plaza Nueva. Order a tinto de verano, get a free tapa, repeat, and you have had dinner. 13,000 reviews at 4.5. Better at the bar than at a table.", meta:"12:30–24:00 daily", url:"https://maps.google.com/?q=Bar+La+Riviera+Granada"},
+      {n:"La Buena Vida", tier:"street", closed:[], d:"Round the corner on Calle Almireceros. Generous free tapas you pick off a list, albóndigas the standout, fast even when full. Ideal when you have a 22:00 slot to make.", meta:"12:00–24:00 daily · +34 654 63 57 97", url:"https://maps.google.com/?q=La+Buena+Vida+Granada"},
+      {n:"Bar Ávila", tier:"street", closed:["sun"], d:"Queue forms before the 20:00 opening. Roast jamón, dogfish, fried Iberian pork, and they let you choose the free tapa. Closed Sunday.", meta:"12:00–17:00, 20:00–24:00", url:"https://maps.google.com/?q=Bar+Avila+Tapas+Granada"},
+      {n:"Restaurante Carmen El Agua", tier:"splurge", closed:[], d:"Albaicín terrace with the Alhambra floodlit in front of you, and food that does not coast on the view. Octopus carpaccio, tuna belly. Book well ahead for a terrace table. The choice if you end up without a night ticket.", meta:"13:00–16:00, 20:00–23:30 · +34 958 22 43 56", url:"https://maps.google.com/?q=Restaurante+Carmen+El+Agua+Granada"},
+      {n:"El Rincón de Julio", tier:"mid", closed:[], d:"Calle Navas. 4.9 from 5,500 people, rabo de toro off the bone, mother in law's croquetas. Tiny, so reserve by WhatsApp.", meta:"+34 615 13 29 30", url:"https://maps.google.com/?q=El+Rincón+de+Julio+Granada"},
+      {n:"La Telefónica", tier:"mid", closed:[], d:"Calle Salamanca. 4.9 from 11,000 reviews, Andalusian classics, torreznos and Iberian ribs, outdoor tables worth reserving for.", meta:"13:00–24:00 daily · +34 958 25 62 20", url:"https://maps.google.com/?q=La+Telefónica+Granada"}
+    ]
+  },
+  {
+    id:"marbella", name:"Marbella and the west coast", drive:"~30 min", dist:"~30 km",
+    tags:[], when:"Evenings. Nothing here improves at 15:00.",
+    pitch:"The old town has almost nothing to do with the reputation: orange trees, a 16th century square, and lanes worth an hour. Then the highest concentration of serious kitchens in the region, and beach bars that cost a third of what you expect.",
+    trap:"With Zafir booked you no longer need a Marbella splurge, so treat the four starred places below as spares. Candeal and Skina both close Sunday, Candeal also Monday. Park in the Plaza de los Naranjos underground and walk; driving the old town is pointless.",
+    sights:[
+      {n:"Plaza de los Naranjos and the old town", h:"free", d:"Orange trees, a 16th century square, and the lanes around it beat the marina in every respect.", url:"https://maps.google.com/?q=Plaza+de+los+Naranjos+Marbella"},
+      {n:"Paseo Marítimo to Puerto Banús", h:"free", d:"Seven flat kilometres of promenade if anyone wants the walk, and a fair amount of comedy at the far end."},
+      {n:"Estepona old town", h:"free · +25 min", d:"Flower-covered streets, a genuinely good orchid house, and far fewer people than Marbella. The better option if the group wants pretty rather than lively.", url:"https://maps.google.com/?q=Estepona+old+town"},
+      {n:"Ojén and Refugio de Juanar", h:"free", d:"Fifteen minutes up into the Sierra Blanca behind Marbella. Pine forest, cooler air, and a viewpoint over the whole coast.", url:"https://maps.google.com/?q=Refugio+de+Juanar"},
+      {n:"Casares", h:"free · ~1 h from Mijas", d:"White village stacked up a rock face under a Moorish castle, with the Strait and Africa visible on a clear morning. Park at the bottom and walk; the streets are brutal.", url:"https://maps.google.com/?q=Castillo+de+Casares"},
+      {n:"Gibraltar", h:"passports · ~1 h 10", d:"A half day on its own rather than an add on. Expect a border queue and remember the apes bite."}
+    ],
+    food:[
+      {n:"Candeal", tier:"splurge", closed:["mon","sun"], d:"Tasting menu only, 4.9 from close to 300 reviews, no star yet and obviously coming. Quail with toffee popcorn sauce, bacon with strawberries, wine pairings that explain themselves. Sittings from 19:00.", meta:"19:00–22:00 · +34 608 88 80 06", url:"https://maps.google.com/?q=Restaurante+Candeal+Marbella"},
+      {n:"Restaurante Skina · two stars", tier:"splurge", closed:["sun"], d:"In the old town itself. Tasting only, from around €300 a head. A few reviewers grumble about the upsell; the cooking is not in question.", meta:"18:30–24:00 · +34 604 48 63 03", url:"https://maps.google.com/?q=Restaurante+Skina+Marbella"},
+      {n:"Messina", tier:"splurge", closed:["tue","sun"], d:"One star, small room, creative without being pretentious, and front of house that regulars name in reviews. Closed Tuesday and Sunday.", meta:"19:00–22:00 · +34 952 86 48 95", url:"https://maps.google.com/?q=Messina+Restaurante+Marbella"},
+      {n:"El Lago", tier:"splurge", closed:["mon"], d:"One star, tables beside an artificial lake, seasonal menus and tuna season events. Terrace open through summer, and less formal than the other three.", meta:"12:00–17:30, 19:00–24:00 · +34 952 83 23 71", url:"https://maps.google.com/?q=Restaurante+El+Lago+Marbella"},
+      {n:"Chiringuito Basilio", tier:"street", closed:[], d:"Playa de la Fontanilla. Fritura malagueña, clams in a sauce worth mopping up, big prawns off the charcoal. Open daily until 23:15, priced like a beach bar rather than like Marbella.", meta:"12:00–23:15 · +34 952 86 54 95", url:"https://maps.google.com/?q=Chiringuito+Basilio+Marbella"},
+      {n:"Trocadero Playa", tier:"mid", closed:[], d:"Beach club with a luxury tilt near Puente Romano. Salt crust sea bream and gazpacho are the picks; the octopus is a lottery. Pricier for the location than the food.", meta:"10:00–24:00 · +34 610 70 41 44", url:"https://maps.google.com/?q=Trocadero+Playa+Marbella"}
+    ]
+  },
+  {
+    id:"agua", name:"Cold water: Istán and Benahavís", drive:"35–50 min", dist:"~45 km",
+    tags:["near"], when:"The 38 °C day. Parked by 09:15, especially at weekends.",
+    pitch:"The one zone where the heat works for you. Two river gorges with cold rock pools, and a mountain village that is essentially a set of restaurants with houses attached.",
+    trap:"Do not leave anything in the car at the Benahavís river car park; the reviews are consistent about thieves. Los Abanicos closes Monday and Tuesday, Sabor closes Wednesday and Sunday, Karas closes Monday.",
+    sights:[
+      {n:"Charco de las Mozas, Benahavís", h:"free", d:"Free parking outside the village, about 1 km on the pavement, then through a gate in the fence. Jumping spots, slippery smooth rock, and you can keep walking up the riverbed for as long as anyone is enjoying it. Shoes you can soak.", url:"https://maps.google.com/?q=Charco+de+las+Mozas+Benahavis"},
+      {n:"Charco del Canalón, Istán", h:"free", d:"Three kilometres of easy track from the parking, about 30 minutes on foot, ending at a waterfall with clear pools and natural jacuzzis. Quieter than Benahavís, rougher access road.", url:"https://maps.google.com/?q=Charco+del+Canalón+Istán"},
+      {n:"Nacimiento del Río Molinos, Istán", h:"free", d:"Fifteen minutes on foot from the centre of Istán to a spring where locals fill bottles. Easy add on, shaded the whole way.", url:"https://maps.google.com/?q=Nacimiento+del+Rio+Molinos+Istan"},
+      {n:"Benahavís village", h:"free", d:"Twenty restaurants in a village of 3,000 people, wedged in a river valley. Walkable in fifteen minutes, which is the point.", url:"https://maps.google.com/?q=Benahavis"},
+      {n:"Embalse de la Concepción", h:"free", d:"The reservoir below Istán, with viewpoints on the road up. No swimming, but the drive is the good part."}
+    ],
+    food:[
+      {n:"Los Abanicos, Benahavís", tier:"mid", closed:["mon","tue"], d:"Suckling pig with paper thin skin, beef Wellington, lamb, tables out in the street. Michelin listed for years without a star, which is exactly the right place to be.", meta:"13:00–16:00, 19:00–23:00 · +34 952 85 50 22", url:"https://maps.google.com/?q=Los+Abanicos+Benahavis"},
+      {n:"Karas Grill, Benahavís", tier:"mid", closed:["mon"], d:"Armenian charcoal grill. Dolma, pickled vegetables, borscht, honey cake, 4.9 rating, and barely known outside the village. The left-field pick of the whole week.", meta:"13:00–23:00 · +34 604 45 41 65", url:"https://maps.google.com/?q=Karas+Grill+Benahavis"},
+      {n:"Restaurante Sabor, Benahavís", tier:"mid", closed:["wed","sun"], d:"4.9 from 360 reviews, balcony tables, aubergine with honey that people write essays about. Evenings only, closed Wednesday and Sunday.", meta:"18:00–23:30 · +34 951 54 97 38", url:"https://maps.google.com/?q=Restaurante+Sabor+Benahavis"},
+      {n:"The Village, La Heredia", tier:"mid", closed:[], d:"Perfect 5.0 across 69 reviews, which is a small sample but a loud one. Risotto, lamb, occasional themed tasting menus. Sunday is daytime only.", meta:"13:00–23:00 · Sun 13:00–18:00 · +34 951 69 46 55", url:"https://maps.google.com/?q=The+Village+La+Heredia+Benahavis"}
+    ]
+  },
+  {
+    id:"axarquia", name:"Axarquía: Nerja and Frigiliana", drive:"~1 h 25", dist:"~100 km east",
+    tags:[], when:"Only if you want it. The longest drive on the list.",
+    pitch:"The whitest of the white villages with its Moorish street plan intact, the biggest cave system on the coast, and the clearest water in the province. Also two and a half hours in the car, so it competes directly with a day at the pool.",
+    trap:"Old Town Restaurant in Frigiliana closes Wednesday and Thursday. Frigiliana at midday in August is a white oven, so do the village at golden hour and the coast earlier. Río Chíllar access has had capacity limits in recent summers, so check before counting on it.",
+    sights:[
+      {n:"Frigiliana old town", h:"free", d:"Park in the public car park in the centre and walk up. Cobbled ramps, ceramic panels telling the Morisco rebellion story, bougainvillea everywhere. Sunset from the top of Calle Real.", url:"https://maps.google.com/?q=Casco+historico+de+Frigiliana"},
+      {n:"Cueva de Nerja", h:"~€15 · book online", d:"Enormous chambers with a record-holding stalagmite, and cool inside all year. Busiest ticket in the Axarquía in August.", url:"https://maps.google.com/?q=Cueva+de+Nerja"},
+      {n:"Balcón de Europa", h:"free", d:"Palm lined promontory dropped straight onto the sea, with Calahonda beach in the cove underneath.", url:"https://maps.google.com/?q=Balcón+de+Europa+Nerja"},
+      {n:"Playa de Maro", h:"free", d:"Ten minutes east, a cove under cliffs, clearest water on this coast. Steep walk down, kayaks for hire, waterfall around the headland.", url:"https://maps.google.com/?q=Playa+de+Maro"},
+      {n:"Río Chíllar", h:"free · check access", d:"Walk up a river in the water itself for as long as you like, through a narrowing gorge. Perfect in a heatwave, but access has been restricted in recent summers, so verify first.", url:"https://maps.google.com/?q=Rio+Chillar+Nerja"}
+    ],
+    food:[
+      {n:"Old Town Restaurant & Bar, Frigiliana", tier:"mid", closed:["wed","thu"], d:"Terrace over the rooftops, 4.8 from close to 600 reviews, owners working the room themselves. Fish and pork both come out right.", meta:"13:00–23:00 · +34 624 50 23 43", url:"https://maps.google.com/?q=Old+Town+Restaurant+Frigiliana"},
+      {n:"Burriana beach chiringuitos, Nerja", tier:"street", closed:[], d:"The espeto de sardinas is the point: six sardines on a cane over burning olive wood, about €5. Any place with a smoking boat out front."}
+    ]
+  }
+];
+
+const BOARD=[
+  {w:"Alhambra, any of the three routes", when:"Now", how:"tickets.alhambra-patronato.es first, then GetYourGuide. Thu 30 Jul, 22:00 slot. Four names, four passports."},
+  {w:"Granada hotel, Thu 30 → Fri 31", when:"Now", how:"The night visit ends 23:30 and home is 1 h 50 away. Realejo or near Plaza Nueva, and you still get back by 13:00 for the pool."},
+  {w:"Caminito del Rey × 4", when:"Now", how:"caminitodelrey.info, €10 each, Tue 28 if you can get it. Sold out means a guided tour instead."},
+  {w:"Bardal, Ronda", when:"Now", how:"+34 951 48 98 28 · Wed 29 lunch, 13:15. Wed–Fri only and Friday is spoken for, so Wednesday it is."},
+  {w:"Confirm the Zafir time", when:"Today", how:"+34 952 48 56 08 · around 20:15 puts you at the table for sunset. Dinner only, so nothing else fits on Friday evening."},
+  {w:"Los Marinos José, Fuengirola", when:"Now", how:"+34 952 66 10 12 · Sat or Sun lunch, never Monday. Books weeks out, ask anyway."},
+  {w:"Cueva de Nerja", when:"If you do the Axarquía", how:"Timed entry online."},
+  {w:"Airbnb: 06:00 Monday departure", when:"Today", how:"Tell the host now. Key drop, and confirm you can get in before 16:00 on arrival day."},
+  {w:"Mijas village dinners", when:"Day before", how:"Tomillo Limón +34 951 43 72 98 · Koco +34 952 48 61 52. Both turn walk ins away."}
+];
+
+/* ---------- render ---------- */
+let active=null;
+
+function foodCard(f){
+  const shut = active && f.closed.includes(active);
+  const shutTxt = f.closed.length ? "closed "+f.closed.map(c=>LABEL[c]).join(" + ") : "";
+  return `<div class="pick ${f.tier==="splurge"?"splurge":""} ${shut?"shut":""}" data-closed="${f.closed.join(",")}" data-shut="${shutTxt}">
+    <span class="tier">${f.tier}</span><strong>${f.n}</strong><p>${f.d}</p>
+    ${f.meta?`<span class="meta">${f.meta}</span>`:""}
+    ${f.closed.length?`<span class="meta">Closed ${f.closed.map(c=>LABEL[c]).join(", ")}</span>`:`<span class="meta">Open daily</span>`}
+    ${f.url?`<span class="meta"><a href="${f.url}" target="_blank" rel="noopener">Maps →</a></span>`:""}
+  </div>`;
+}
+
+function zoneCard(z){
+  const openCount = active ? z.food.filter(f=>!f.closed.includes(active)).length : z.food.length;
+  const badges = [
+    z.tags.includes("anchor")?`<span class="badge anchor">book ahead</span>`:"",
+    z.tags.includes("near")?`<span class="badge near">close to base</span>`:"",
+    `<span class="badge count">${openCount} of ${z.food.length} kitchens open</span>`
+  ].join("");
+  const sights = z.sights.map(s=>`<li>
+      <span class="sname"><strong>${s.n}</strong><span class="hrs">${s.h}</span></span>
+      <p>${s.d}</p>
+      ${s.url?`<a href="${s.url}" target="_blank" rel="noopener">Open in Maps →</a>`:""}
+    </li>`).join("");
+  return `<article class="zone" id="${z.id}">
+    <button class="zhead" aria-expanded="false">
+      <span class="chev">▾</span>
+      <div class="zbar">${badges}</div>
+      <h3>${z.name}</h3>
+      <p class="pitch">${z.pitch}</p>
+      <div class="metrics"><span>${z.drive}</span><span>${z.dist}</span></div>
+      <div class="metrics" style="margin-top:6px"><span>${z.when}</span></div>
+    </button>
+    <div class="zbody">
+      <h4 class="sub">Pick two or three <em>${z.sights.length} options</em></h4>
+      <ul class="sights">${sights}</ul>
+      <h4 class="sub">Where you eat <em>street · mid · splurge</em></h4>
+      <div class="food">${z.food.map(foodCard).join("")}</div>
+      <div class="warn"><strong>Watch out.</strong> ${z.trap}</div>
+    </div>
+  </article>`;
+}
+
+function renderZones(){
+  const openIds = [...document.querySelectorAll(".zone.open")].map(z=>z.id);
+  document.getElementById("zones").innerHTML = ZONES.map(zoneCard).join("");
+  openIds.forEach(id=>{
+    const z=document.getElementById(id);
+    if(z){ z.classList.add("open"); z.querySelector(".zhead").setAttribute("aria-expanded","true"); }
+  });
+}
+
+document.getElementById("week").innerHTML = WEEK.map(r=>
+  `<tr class="${r.anchor?"anchor":""}"><td class="d">${r.d}</td>
+   <td class="z"><a href="#${r.zid}">${r.z}</a></td><td class="alt">${r.alt}</td></tr>`).join("");
+
+document.getElementById("board").innerHTML = BOARD.map(r=>
+  `<tr><td>${r.w}</td><td class="when">${r.when}</td><td>${r.how}</td></tr>`).join("");
+
+document.getElementById("dayrow").innerHTML =
+  DAYS.map(d=>`<button class="dbtn" data-day="${d}" aria-pressed="false">${LABEL[d]}</button>`).join("")
+  + `<button class="dbtn reset" data-day="" aria-pressed="true">All</button>`;
+
+renderZones();
+
+document.getElementById("dayrow").addEventListener("click", e=>{
+  const b=e.target.closest(".dbtn"); if(!b) return;
+  active = b.dataset.day || null;
+  document.querySelectorAll(".dbtn").forEach(x=>x.setAttribute("aria-pressed", x===b));
+  renderZones();
+});
+
+document.addEventListener("click", e=>{
+  const h=e.target.closest(".zhead"); if(!h) return;
+  const open=h.parentElement.classList.toggle("open");
+  h.setAttribute("aria-expanded", open);
+});
+document.getElementById("week").addEventListener("click", e=>{
+  const a=e.target.closest("a"); if(!a) return;
+  const z=document.querySelector(a.getAttribute("href"));
+  if(z && !z.classList.contains("open")){
+    z.classList.add("open");
+    z.querySelector(".zhead").setAttribute("aria-expanded","true");
+  }
+});
+document.getElementById("copybtn").addEventListener("click", async e=>{
+  try{
+    await navigator.clipboard.writeText(document.getElementById("es").textContent.trim());
+    e.target.textContent="Copied";
+    setTimeout(()=>e.target.textContent="Copy Spanish booking text",1800);
+  }catch{ e.target.textContent="Select the text above and copy it"; }
+});
+</script>
+</body>
+</html>
