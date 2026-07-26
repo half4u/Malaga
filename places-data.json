@@ -93,7 +93,7 @@
     "placeId": "ChIJiSY9GUrjcg0RcoKvcYIUz6o",
     "mapsUri": "https://maps.google.com/?cid=12308078857112486514&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "rating": 4.6,
-    "reviewCount": 551,
+    "reviewCount": 552,
     "priceLevel": null,
     "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjBjoNkXMw9J6mMm_r2z09aT1V_8LbeCQEjz23LzhplUNyApXC7sWojPV7eHViWQSnHQc5fqgzE6w5V6zTed9o8_CoRFvHfBEvBPwgqeWp9GNA64w9ZVXmbGA9nMyQXYNxOeWxXqauAFFwPaidYpzxSNLQ=s4800-w640",
     "reviewSnippet": "Great location just on the edge of the tourist area.  If you want the best quality and experience you need to walk through the streets just outside of the main tourist zones.  This"
@@ -210,7 +210,7 @@
     "placeId": "ChIJ6avB78lJDQ0RAMgbDiXPiV0",
     "mapsUri": "https://maps.google.com/?cid=6740146075394099200&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "rating": 4.6,
-    "reviewCount": 3698,
+    "reviewCount": 3699,
     "priceLevel": 1,
     "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjDZaC0piRrPTy0BJs5GxtXEPjjjyMR7yXT7wRMj5U33tZRn8m19z0_0dQ7yroPfsuqfxPRaQFQxu22hlmCDS0pbmgG-PofFd4lVV2olMyZU6Ts2pVhTLGeVTm6Bgr1dUblq4iYGwFY-ieHPtQ=s4800-w640",
     "reviewSnippet": "We had an amazing dining experience at Bar Frasquito! The atmosphere was wonderful and very welcoming, made even better by our incredibly sweet and attentive waitress.\nFor food, we"
@@ -737,6 +737,33 @@
     "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjDvtsPF0TGMlAMigUfvZTqZAz3iwH_cea89NZ8dIBRLun2y5YNHfmxZylbvZVCBPwe4T55Kf8Zujstyb0nqf2TiUFVRrFUy0ARmKcMq5YQBQr1sT7RlJaWue_zX53_hqZtMLbNeKLJgdIrYFA=s4800-w640",
     "reviewSnippet": "Can't believe we've been coming to this part of Spain for so long and have only just discovered this place 🥲. In a sea of tourist facing, everyone pleasing nonsense, this is the r"
   },
+  "Espeto de sardinas, Pedregalejo": {
+    "placeId": "ChIJcaBtBD9Ycg0RSNLZmnbSipM",
+    "mapsUri": "https://maps.google.com/?cid=10631541277207417416&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "rating": 4.4,
+    "reviewCount": 1812,
+    "priceLevel": 2,
+    "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjBrjv9hkwUlc_K_jRI3ugwtoqFEa6go2TBXJaFQwsHV_WhaqENr62jvIRJtnX-Jn3JVUEfSVinbkDYlry9P1xjQVmtMULbOX0wiILn_UdjwiFqSZJpvfBU9UFOz9SNxP1zzO6Z9N3kuiOFIE1uUXYpAuA=s4800-w640",
+    "reviewSnippet": "Best fish I’ve had in Malaga so far! Absolutely lovely. Very hospitable owner and staff."
+  },
+  "El Kiosco, El Chorro": {
+    "placeId": "ChIJeff3IhW_cg0RbPKI9QKVBA0",
+    "mapsUri": "https://maps.google.com/?cid=938038462341771884&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "rating": 4.5,
+    "reviewCount": 85,
+    "priceLevel": null,
+    "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjCVcbWuQm3Qdl7MyWYc_y4htrabWXcWKw8INEPRmiojA0PpBg8FzBOnDXM1gtbsy_loRfFxuEl16NqxqybjCmBh_zf1HUPbEjL22H26TB-p5fL_1UEvDFfwqpmmJIn7D6C3mnzQCS-cLA7s=s4800-w640",
+    "reviewSnippet": "The end of the route. After leaving Caminito del Rey, you can eat & drink something in here. There is also a bus which takes you back to your parking."
+  },
+  "Burriana beach chiringuitos, Nerja": {
+    "placeId": "ChIJUSbtGxEkcg0RnN_6Bg4iNVk",
+    "mapsUri": "https://maps.google.com/?cid=6428081486783242140&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "rating": 4,
+    "reviewCount": 6546,
+    "priceLevel": 1,
+    "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjBtiWlAKgAY_VTZOViiILhn7dbIYtdAy0-LtuGpJHi9vrTw8rZjB6GyqtFrFVU15zu0ts9Msxzc4MF1YBA9x1-VNr1skDV49CH4gyg3VkJvhytuRn1KJe0ke0jZkXkj2aG1O5PeSNhQEyJ0tg=s4800-w640",
+    "reviewSnippet": "Excellent paella, lovely atmosphere and fair prices. The perfect Spanish meal experience after a full morning at the beach. We also tried the Ayo Salad and a Flan for dessert. No r"
+  },
   "Parque La Muralla and Paseo de la Muralla": {
     "placeId": "ChIJez2njeTjcg0RlwGH-EdUzr4",
     "mapsUri": "https://maps.google.com/?cid=13749019380497711511&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
@@ -756,13 +783,13 @@
     "reviewSnippet": "What a beautiful view of the city and mountains from this spot. It opens up into many small streets and viewpoints across the city.\n\nThe city feels so vibrant and full of life, wit"
   },
   "Fuengirola fishing harbour": {
-    "placeId": "ChIJVxjZgkXicg0R1wVDT1yfp0s",
-    "mapsUri": "https://maps.google.com/?cid=5451501092770874839&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-    "rating": 4.3,
-    "reviewCount": 4211,
+    "placeId": "ChIJv2fVRQDjcg0Rf_AtpT7NHTg",
+    "mapsUri": "https://maps.google.com/?cid=4043613709391491199&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "rating": 5,
+    "reviewCount": 18,
     "priceLevel": null,
-    "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjAELWoQo81iBtrhH2jKt_mLWRSZHcPQgcpclaBrqqMIPDN_SdSNNjOvcgjlqobiJhlG7pM9b8rnRveJzXNx-Dz0EahtsqXiVqqrLbFJLtjCfo1No7sSwEpox6Zy6gGC7IPRj4GepN6wxHlH7TM=s4800-w640",
-    "reviewSnippet": "Some great bars around the back by the piers. Well worth a visit before you get on the ferry back to Benalmádena 🛥"
+    "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjDJWNASW5B4X6TMGVgkMgBdvjaCRqfblc35lQmk4VlxE9bOzcKjlfqg_8pwXZl0robgD3HaoUUqioV_H4emU6ajI-vW33LdowcdLyGV10nn0Jmah5VD1Cy0n0ywAIiAObahCcOJ31rzWQqjQtTkWxgJ=s4800-w640",
+    "reviewSnippet": "We had an amazing experience on this private fishing boat. The captain took us to some truly breathtaking spots with incredible scenery, and the fishing was fantastic. One of the h"
   },
   "Castillo Sohail, Fuengirola": {
     "placeId": "ChIJuVqhXfwdcw0RsM9e8uh5rp8",
@@ -1065,7 +1092,7 @@
     "placeId": "ChIJ1UUjljQkcg0Ro3LL1lTpWkc",
     "mapsUri": "https://maps.google.com/?cid=5141678475187024547&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "rating": 4.6,
-    "reviewCount": 41187,
+    "reviewCount": 41188,
     "priceLevel": null,
     "photo": "https://lh3.googleusercontent.com/place-photos/AG9NLjCG3ZQMhOUEovsnangnCAFIHqo5lZdQ-2eqbOVSCakW7dRX8J9OkCpPSBpi_7Fd2H5ixj7emzjtCC9KKCbbBgZbMmwjtZXhJos60gbFR4Okxx1VyttTVbgC3rSYPNeyReGwLfj-wngA-BSk=s4800-w640",
     "reviewSnippet": "Amazing place with a truly special atmosphere. The caves are absolutely gorgeous and mysterious, it is quite dark inside but it doesn't feel grim but rather inviting and mysterious"

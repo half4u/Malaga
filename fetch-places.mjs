@@ -99,6 +99,10 @@ const PLACES = [
   ["Restaurante El Olivo de La Cala", 36.5002, -4.6845],
   ["Chiringuito Playa Marina", 36.5068, -4.6506],
   ["Chiringuito Oasis", 36.5661, -4.5971],
+  // --- Fix: previously-generic entries that resolve to a correct real place ---
+  ["Espeto de sardinas, Pedregalejo", 36.7185, -4.3835],
+  ["El Kiosco, El Chorro", 36.9078, -4.7592],
+  ["Burriana beach chiringuitos, Nerja", 36.7395, -3.8730],
 ];
 
 // Sights have no per-entry coords in the site data, so each is biased on its
