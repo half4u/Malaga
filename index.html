@@ -2254,11 +2254,10 @@ function dataFor(n){
 const keyOf=n=>Array.isArray(n)?n[1]:n;   // stable English/Spanish identifier used for INFO + map lookups
 
 function chips(n){
-  const key=keyOf(n);
-  const i=INFO[key]; if(!i) return "";
+  const d=dataFor(n);
   const out=[];
-  if(i[0]) out.push(`<span class="gchip star">★ ${dec(i[0])} <b>${num(i[1])}</b></span>`);
-  if(i[2]) out.push(`<span class="gchip">${"€".repeat(i[2])}</span>`);
+  if(d.rating) out.push(`<span class="gchip star">★ ${dec(d.rating)} <b>${num(d.reviews)}</b></span>`);
+  if(d.price) out.push(`<span class="gchip">${"€".repeat(d.price)}</span>`);
   return out.length?`<span class="gchips">${out.join("")}</span>`:"";
 }
 function mapBtn(n,url){
