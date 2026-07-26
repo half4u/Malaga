@@ -2304,7 +2304,7 @@ function foodCard(f){
   const shut=active&&f.closed.includes(active);
   const days=f.closed.map(c=>T(LABEL[c]));
   const shutTxt=days.length?T(UI.closedOn)+" "+days.join(" + "):"";
-  const thumb=commonsImg(FOODIMG[catFor(f)],220);
+  const thumb=dataFor(f.n).photo||commonsImg(FOODIMG[catFor(f)],220);
   return `<div class="pick ${f.tier==="splurge"?"splurge":""} ${shut?"shut":""}" data-shut="${esc(shutTxt)}">
     <div class="pick-img" style="background-image:url('${thumb}')" role="img" aria-label=""></div>
     <span class="tier">${T(TIER[f.tier])}${chips(f.n)}</span><strong>${T(f.n)}</strong><p>${T(f.d)}</p>
