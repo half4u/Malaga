@@ -11,3 +11,12 @@ node_modules/
 # OS cruft
 .DS_Store
 Thumbs.db
+fetch-progress.log
+
+# Local verification artifacts
+sheet-verification.png
+.playwright-mcp/
+
+# GitHub token for half4u (local only)
+half4u.token
+*.token
