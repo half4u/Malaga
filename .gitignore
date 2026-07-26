@@ -1,5 +1,5 @@
 # === SECRETS — never commit these ===
-# Google Places API key lives here, local-only. See places-api-integration.md.
+# Google Places API key lives here, local-only.
 gcloud.secret
 *.secret
 .env
@@ -20,3 +20,9 @@ sheet-verification.png
 # GitHub token for half4u (local only)
 half4u.token
 *.token
+
+# Dev artifacts — kept local, not shipped to the repo
+docs/
+fetch-places.mjs
+places-api-integration.md
+
