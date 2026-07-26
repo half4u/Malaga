@@ -1,103 +1,140 @@
 # Places API integration — handoff spec
 
-## What this site is
+> **Refactor note (2026-07-26):** This doc was revised against the *actual*
+> current `index.html`. The original referenced a `REALFOOD` object (6
+> hand-found restaurant photos) that no longer exists in the file — food cards
+> now use a generic per-category placeholder (`commonsImg(FOODIMG[catFor(f)])`).
+> All merge instructions below reflect the real code. See **Merging** step 3.
+
+## TL;DR
+
+Run one local script with your Google Places key → it writes a **secret-free**
+`places-data.json` → paste that into `index.html` as `PLACES_DATA` → restaurant
+cards get real photos, live ratings, review snippets, and reliable `place_id`
+deep links. The key never touches the shipped site or git.
+
+- **Key file:** `gcloud.secret` (local only, git-ignored — never commit it).
+- **One run ≈ 106 API calls. Comfortably free.** See [Cost & safety](#cost--safety).
+
+---
+
+## 1. What this site is
 
 A single-file, static travel-planning site for a Costa del Sol trip (Mijas base,
 27 Jul – 3 Aug 2026). One `index.html`, no build step, no dependencies beyond
-Google Fonts, deployed to GitHub Pages at `half4u/Malaga`. Bilingual DE/EN via
-a runtime language toggle (default German).
+Google Fonts, deployed to GitHub Pages at `half4u/Malaga`. Bilingual DE/EN via a
+runtime language toggle (default German).
 
-Structurally the file is CSS in one `<style>` block, then one `<script>` block
-containing, in this order: static bilingual UI strings, the day/zone data
-(`ZONES`, `RANK`, `WEEK`, `BOARD`), a manual Google-ratings snapshot (`INFO`),
-render functions (`chips`, `mapBtn`, `foodCard`, `zoneCard`, `drawMap`,
-`drawRank`, `renderAll`), and a bottom-sheet "map popup" component
-(`openSheet`/`closeSheet`) that opens when any "Map" button is tapped.
+Layout of the file: one `<style>` block, then one `<script>` containing, in
+order — static bilingual UI strings; the day/zone data (`ZONES`, `RANK`, `WEEK`,
+`BOARD`); a manual Google-ratings snapshot (`INFO`); render functions (`chips`,
+`mapBtn`, `foodCard`, `zoneCard`, `drawMap`, `drawRank`, `renderAll`); and a
+bottom-sheet "map popup" (`openSheet`/`closeSheet`) triggered by any "Map" button.
 
-## The task
+Key data structures the integration touches:
 
-Wire in the user's own Google Places API key so restaurant cards (and ideally
-sight cards) show **real photos**, a **real review snippet**, and a **reliable
-deep link**, instead of the current manual/partial state:
+- `INFO` (`index.html:1200`) — hand-typed snapshot keyed by place name:
+  `[rating, reviewCount, priceLevel, lat, lng, tel]`. Static, drifts over time.
+- `keyOf(n)` (`index.html:1282`) — the stable name identifier used for all
+  `INFO`/map lookups. Reuse it; don't invent a second key scheme.
+- `FOODIMG` + `commonsImg(...)` — how food cards get their image **today**: a
+  generic Wikimedia Commons photo *per food category*, not per restaurant.
 
-- `INFO` — a hand-typed snapshot object keyed by place name:
-  `[rating, reviewCount, priceLevel, lat, lng, tel]`. Static, will drift.
-- `REALFOOD` — 6 restaurant photos found and verified by hand (og:image pulled
-  from each restaurant's own website). Everything else shows no photo.
-- Map links are built from `lat,lng` or a decoded text query — workable, but
-  not as reliable as a real Google `place_id`.
+## 2. The goal
 
-Google's own Places API is the correct fix for all three at once: it returns
-a `place_id` (for a bulletproof deep link), a photo reference (for a real
-image), and review text (for a real snippet) — for both restaurants and
-sights.
+Give each restaurant card a **real photo**, a **real review snippet**, and a
+**reliable deep link** — replacing the current mix of a static `INFO` snapshot
+and generic category placeholders. Google's Places API (New) delivers all three
+in one shot: a `place_id` (bulletproof deep link), a photo reference, and review
+text, for restaurants (and, as a stretch, sights).
 
-## Hard constraint: the API key must never reach the shipped file
+---
 
-This is a public static site with no backend (GitHub Pages). Anything in
-`index.html` is visible to anyone — view source, `curl`, or a repo clone.
-**Do not** put the API key in the site's JS, even "restricted." The correct
-pattern for a static site is:
+## 3. Hard constraint: the key must never reach the shipped file
 
-1. A **one-time script runs locally**, on the user's own machine, using the
-   key directly (never committed, never pasted into chat).
-2. It calls the Places API, and **resolves photo references to public,
-   key-free `lh3.googleusercontent.com` URLs** using the Places API (New)
-   photo endpoint's `skipHttpRedirect=true` parameter, which returns
-   `{ photoUri }` as JSON instead of redirecting — so the final site never
-   needs the key at all.
+This is a public static site with no backend. Anything in `index.html` is
+visible via view-source, `curl`, or a repo clone. **Do not** put the key in the
+site's JS, even "restricted." The correct static-site pattern:
+
+1. A **one-time script runs locally** with the key (from `gcloud.secret`, never
+   committed, never pasted into chat).
+2. It calls the Places API and **resolves photo references to public, key-free
+   `lh3.googleusercontent.com` URLs** via the photo endpoint's
+   `skipHttpRedirect=true` param, which returns `{ photoUri }` as JSON instead
+   of redirecting — so the final site never needs the key.
 3. It writes one JSON file with everything the site needs: `place_id`,
-   `googleMapsUri`, `rating`, `reviewCount`, `priceLevel`, the resolved photo
-   URL, and a short review snippet.
-4. That JSON (zero secrets in it) gets merged into the site as a
-   `PLACES_DATA` object, replacing/augmenting `INFO` + `REALFOOD` at each
-   lookup site.
+   `googleMapsUri`, `rating`, `reviewCount`, `priceLevel`, resolved photo URL,
+   and a short review snippet.
+4. That JSON (**zero secrets**) is merged into the site as `PLACES_DATA`,
+   augmenting `INFO` at each lookup site.
 
-If the user would rather call the API live from the browser instead of doing
-a one-time fetch, that's possible with Places API (New), which does support
-CORS — but it requires locking the key down hard in Google Cloud Console
-(HTTP referrer restriction to `half4u.github.io/*`, API restricted to "Places
-API (New)" only, and a billing budget alert), and it still means the key sits
-in public source. **Recommend the one-time-script approach above as the
-default**; only do live client-side calls if the user explicitly asks for it
-after understanding that tradeoff.
+> **Live client-side calls?** Places API (New) supports CORS, so calling it from
+> the browser is technically possible — but it requires a hard key lockdown
+> (HTTP-referrer restriction to `half4u.github.io/*`, API restricted to Places
+> API (New) only, budget alert) *and still leaves the key in public source*.
+> **Default to the one-time-script approach.** Only go live client-side if you
+> explicitly choose that tradeoff.
 
-## The fetch script
+---
 
-Already written and syntax-checked. Node 18+ only (native `fetch`, no
-`npm install`). Create this as `fetch-places.mjs` at the repo root:
+## 4. Cost & safety
+
+**One full run ≈ 106 calls:** one Text Search + up to one Photo call for each of
+the 53 restaurants. Every free monthly quota dwarfs this:
+
+| Call | Per run | Free / month | Above free |
+|------|---------|--------------|------------|
+| Text Search (`searchText`) | 53 | 5,000–10,000 | $5–$32 / 1k |
+| Place Photo (`resolvePhoto`) | ≤ 53 | **1,000** | $7 / 1k |
+
+A normal run — even several re-runs — **costs $0**. The tightest ceiling is the
+**Photo quota (1,000/mo)**: you'd need ~9 full runs in one month to reach it.
+
+> **Why the higher SKU tiers apply:** the field mask requests `reviews` and
+> `photos`, which bill at the Pro/Enterprise tiers (5,000 / 1,000 free), not the
+> cheap Essentials tier (10,000). Still free for one run — just why 1,000 is the
+> real ceiling to watch.
+
+**Before running (in Cloud Console — these are yours to click, ~5 min):**
+
+- **Budget tripwire:** Billing → Budgets & alerts → create a **$1 budget** with
+  alerts at 50/90/100%. Pricing terms change; a budget alert is the real
+  guardrail, not any number in this doc.
+- **Restrict the key:** Credentials → your key → API restrictions → **Places API
+  (New) only.** Do not skip this.
+- *(Optional)* **Quota cap:** Places API → Quotas → cap requests/day (e.g. 300)
+  so a runaway loop can't cost anything.
+
+---
+
+## 5. The fetch script
+
+Node 18+ only (native `fetch`, no `npm install`). Save as `fetch-places.mjs` at
+the repo root. It reads the key from **`process.argv[2]`** — pass it from
+`gcloud.secret` at the shell so the key never lands in a committed file:
+
+```
+node fetch-places.mjs "$(cat gcloud.secret)" > places-data.json
+```
+
+`places-data.json` contains zero secrets and is safe to commit. Progress prints
+to stderr; JSON to stdout.
 
 ```js
 #!/usr/bin/env node
-// fetch-places.mjs
-//
-// Pulls a real photo, the actual Google place_id, live rating/price, and one
-// short review snippet for every restaurant in the trip site, using the
-// Places API (New). Requires Node 18+ (native fetch, no npm install needed).
-//
-// Your API key is only ever used on THIS machine, in this one run. It never
-// gets written to the output file and never goes near the GitHub repo.
-//
-// Usage:
-//   node fetch-places.mjs YOUR_API_KEY > places-data.json
-//
-// Enable first in Google Cloud Console (console.cloud.google.com):
-//   APIs & Services -> Library -> enable "Places API (New)"
-//   Then, on the key itself: Credentials -> your key -> API restrictions
-//   -> restrict to "Places API (New)" only. Do NOT skip this step.
+// fetch-places.mjs — Places API (New). Node 18+. Key used only on this machine,
+// only this run; never written to output, never near git.
 
 const KEY = process.argv[2];
 if (!KEY) {
-  console.error("Usage: node fetch-places.mjs YOUR_API_KEY > places-data.json");
+  console.error('Usage: node fetch-places.mjs "$(cat gcloud.secret)" > places-data.json');
   process.exit(1);
 }
 
-// [site key, lat, lng] -- lat/lng bias the search so "El Lago" in Marbella
-// doesn't resolve to a restaurant of the same name in Buenos Aires.
-// This list is every restaurant currently in ZONES[*].food[] that is a real,
-// single, named venue (a handful of generic entries like "any chiringuito
-// with a smoking boat" or "the ventas around Álora" are deliberately excluded
-// -- they aren't a specific searchable place).
+// [site key, lat, lng] — lat/lng bias the search so a same-named place elsewhere
+// doesn't win. This is every restaurant in ZONES[*].food[] that is a real, single
+// named venue; generic entries ("any chiringuito", "the ventas around Álora") are
+// excluded — they aren't a specific searchable place.
 const PLACES = [
   ["Zafir · CasaBlu", 36.5890341, -4.6457546],
   ["Los Marinos José", 36.5712776, -4.5907292],
@@ -155,6 +192,11 @@ const PLACES = [
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+const PRICE_MAP = {
+  PRICE_LEVEL_FREE: 0, PRICE_LEVEL_INEXPENSIVE: 1, PRICE_LEVEL_MODERATE: 2,
+  PRICE_LEVEL_EXPENSIVE: 3, PRICE_LEVEL_VERY_EXPENSIVE: 4,
+};
+
 async function findPlace(query, lat, lng) {
   const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
     method: "POST",
@@ -162,28 +204,23 @@ async function findPlace(query, lat, lng) {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": KEY,
       "X-Goog-FieldMask": [
-        "places.id",
-        "places.displayName",
-        "places.rating",
-        "places.userRatingCount",
-        "places.priceLevel",
-        "places.googleMapsUri",
-        "places.photos",
-        "places.reviews"
-      ].join(",")
+        "places.id", "places.displayName", "places.rating",
+        "places.userRatingCount", "places.priceLevel",
+        "places.googleMapsUri", "places.photos", "places.reviews",
+      ].join(","),
     },
     body: JSON.stringify({
       textQuery: query,
-      locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 3000 } }
-    })
+      locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: 3000 } },
+    }),
   });
   if (!res.ok) throw new Error(`searchText ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.places?.[0] || null;
 }
 
-// Resolves a photo reference to a public, key-free lh3.googleusercontent.com
-// URL using skipHttpRedirect, so the final site never needs your key.
+// skipHttpRedirect=true → returns { photoUri } JSON (a key-free lh3.* URL)
+// instead of a redirect, so the final site never needs the key.
 async function resolvePhoto(photoName, maxWidthPx = 640) {
   const url = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidthPx}&key=${KEY}&skipHttpRedirect=true`;
   const res = await fetch(url);
@@ -191,11 +228,6 @@ async function resolvePhoto(photoName, maxWidthPx = 640) {
   const data = await res.json();
   return data.photoUri || null;
 }
-
-const PRICE_MAP = {
-  PRICE_LEVEL_FREE: 0, PRICE_LEVEL_INEXPENSIVE: 1, PRICE_LEVEL_MODERATE: 2,
-  PRICE_LEVEL_EXPENSIVE: 3, PRICE_LEVEL_VERY_EXPENSIVE: 4
-};
 
 const out = {};
 let ok = 0, missed = 0;
@@ -211,8 +243,8 @@ for (const [key, lat, lng] of PLACES) {
       catch (e) { console.error("  photo failed for", key, "-", e.message); }
     }
 
-    // One short, real review snippet, trimmed. Google's ToS allows surfacing
-    // review text returned by the API on your own site.
+    // One short, real review snippet. Google's ToS allows surfacing API-returned
+    // review text on your own site; keep it short.
     const reviewText = place.reviews?.[0]?.text?.text || null;
 
     out[key] = {
@@ -222,7 +254,7 @@ for (const [key, lat, lng] of PLACES) {
       reviewCount: place.userRatingCount ?? null,
       priceLevel: PRICE_MAP[place.priceLevel] ?? null,
       photo,
-      reviewSnippet: reviewText ? reviewText.slice(0, 180) : null
+      reviewSnippet: reviewText ? reviewText.slice(0, 180) : null,
     };
     console.error("OK:", key);
     ok++;
@@ -230,176 +262,119 @@ for (const [key, lat, lng] of PLACES) {
     console.error("ERROR:", key, "-", e.message);
     missed++;
   }
-  await sleep(150); // gentle pacing, not a real rate limit requirement
+  await sleep(150); // gentle pacing, not a hard rate-limit requirement
 }
 
 console.error(`\nDone. ${ok} resolved, ${missed} missed, out of ${PLACES.length}.`);
 console.log(JSON.stringify(out, null, 2));
 ```
 
-Run it once:
+---
 
-```
-node fetch-places.mjs AIzaSy...yourkey... > places-data.json
-```
+## 6. Merging the result into the site
 
-`places-data.json` contains zero secrets and is safe to commit.
+Add the fetched data, then route **one** lookup through the places that read
+`INFO` (and the food-photo path) today.
 
-## Merging the result into the site
-
-Replace the current empty stub with the fetched data, and thread a single
-lookup through the three places that currently read `INFO` directly.
-
-**1. Add the data, with INFO/REALFOOD kept as a fallback layer:**
+### Step 1 — Add data + a single unified lookup
 
 ```js
-// Paste the contents of places-data.json here (or import it if the repo
-// moves to a small build step later).
+// Paste the contents of places-data.json here.
 const PLACES_DATA = { /* ...from places-data.json... */ };
 
-// Unified lookup: prefer live Places data, fall back to the manual snapshot,
-// fall back to nothing. Every caller should use this instead of touching
-// INFO or REALFOOD directly.
+// Prefer live Places data, fall back to the manual INFO snapshot, else nothing.
+// Every caller uses this instead of touching INFO directly.
 function dataFor(n) {
   const key = keyOf(n);
   const p = PLACES_DATA[key];
   if (p) return {
     rating: p.rating, reviews: p.reviewCount, price: p.priceLevel,
     tel: null, placeId: p.placeId, mapsUri: p.mapsUri,
-    photo: p.photo, review: p.reviewSnippet
+    photo: p.photo, review: p.reviewSnippet,
   };
   const i = INFO[key];
   if (i) return {
     rating: i[0] || null, reviews: i[1] || null, price: i[2] || null,
     tel: i[5] || null, placeId: null, mapsUri: null,
-    photo: REALFOOD[key] || null, review: null
+    photo: null, review: null,
   };
   return { rating: null, reviews: null, price: null, tel: null,
-    placeId: null, mapsUri: null, photo: REALFOOD[key] || null, review: null };
+    placeId: null, mapsUri: null, photo: null, review: null };
 }
 ```
 
-**2. `chips()` and `mapBtn()` — current code, for reference:**
+> Note: `photo` falls back to `null` (not `REALFOOD`, which no longer exists).
+> The card's own placeholder logic in step 3 handles the no-photo case.
 
-```js
-function chips(n){
-  const key=keyOf(n);
-  const i=INFO[key]; if(!i) return "";
-  const out=[];
-  if(i[0]) out.push(`<span class="gchip star">★ ${dec(i[0])} <b>${num(i[1])}</b></span>`);
-  if(i[2]) out.push(`<span class="gchip">${"€".repeat(i[2])}</span>`);
-  return out.length?`<span class="gchips">${out.join("")}</span>`:"";
-}
-function mapBtn(n,url){
-  const key=keyOf(n), label=T(n);
-  const i=INFO[key]||[];
-  const q=(i[3]!=null&&i[3]!==0)?i[3]+","+i[4]:(url?decodeURIComponent(url.split("?q=")[1]||key).replace(/\+/g," "):key);
-  return `<button class="mapbtn" data-n="${esc(key)}" data-label="${esc(label)}" data-q="${esc(q)}" data-tel="${esc(i[5]||"")}" data-url="${esc(url||"")}">${T(UI.btnMap)}</button>`;
-}
-```
+### Step 2 — `chips()` and `mapBtn()`
 
-Rework both to read through `dataFor(n)` instead of `INFO[key]` directly, so
-rating/price chips reflect live data when present. `mapBtn` should also stash
-`placeId` and `mapsUri` as extra `data-*` attributes on the button (e.g.
+Current code (`index.html:1284`, `:1292`) reads `INFO[key]` directly. Rework both
+to read through `dataFor(n)` so chips reflect live data when present. `mapBtn`
+should also stash `placeId` and `mapsUri` as extra `data-*` attributes (e.g.
 `data-pid`, `data-mapsuri`) so `openSheet` can build a precise deep link.
 
-**3. `foodCard()` — photo preference order:**
+### Step 3 — `foodCard()` photo (the drift-corrected part)
 
-Currently:
+`foodCard` (`index.html:1331`) currently sets the image from a **generic
+category placeholder**:
+
 ```js
-const real=REALFOOD[keyOf(f.n)];
-```
-Change to `dataFor(f.n).photo`, which already encodes the fallback chain
-(live API photo → hand-found REALFOOD photo → no image, card gets the
-`noimg` class exactly as today).
-
-**4. The popup itself — current implementation, for reference:**
-
-Markup (already in the page, `id="sheet"`, hidden by default):
-```html
-<div class="sheet" id="sheet" hidden>
-  <div class="sheet-back" data-close></div>
-  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <button class="sheet-x" data-close aria-label="Karte schließen">✕</button>
-    <p class="sheet-sub" id="sheetSub"></p>
-    <h3 id="sheetTitle"></h3>
-    <div class="sheet-map"><iframe id="sheetFrame" title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
-    <div class="sheet-acts" id="sheetActs"></div>
-    <p class="sheet-note" data-t="sheetNote"></p>
-  </div>
-</div>
+const thumb = commonsImg(FOODIMG[catFor(f)], 220);
 ```
 
-Logic:
+Change the source to **prefer the real per-restaurant photo, fall back to the
+existing category placeholder**:
+
 ```js
-const SHEET=document.getElementById("sheet");
-let lastFocus=null;
-function openSheet(b){
-  const n=b.dataset.n,label=b.dataset.label||n,q=b.dataset.q,tel=b.dataset.tel,url=b.dataset.url;
-  const i=INFO[n];
-  lastFocus=b;
-  document.getElementById("sheetTitle").textContent=label;
-  const bits=[];
-  if(i&&i[0]) bits.push("★ "+dec(i[0])+" · "+num(i[1])+" "+T(UI.reviews));
-  if(i&&i[2]) bits.push("€".repeat(i[2]));
-  document.getElementById("sheetSub").textContent=bits.join("  ·  ");
-  document.getElementById("sheetFrame").src=
-    "https://www.google.com/maps?q="+encodeURIComponent(q)+"&z=16&hl="+(LANG===0?"de":"en")+"&output=embed";
-  const acts=[`<a class="primary" href="${url||"https://maps.google.com/?q="+encodeURIComponent(q)}" target="_blank" rel="noopener">${T(UI.sheetOpen)}</a>`,
-    `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}" target="_blank" rel="noopener">${T(UI.sheetDir)}</a>`];
-  if(tel) acts.push(`<a href="tel:${tel}">${T(UI.sheetCall)}</a>`);
-  document.getElementById("sheetActs").innerHTML=acts.join("");
-  SHEET.hidden=false;
-  document.body.classList.add("locked");
-  SHEET.querySelector(".sheet-x").focus();
-}
+const thumb = dataFor(f.n).photo || commonsImg(FOODIMG[catFor(f)], 220);
 ```
 
-Extend `openSheet` to:
+This is strictly additive: restaurants with a `PLACES_DATA` photo get a real
+one; everyone else keeps today's exact placeholder — no regression, no `noimg`
+state needed since a placeholder always exists.
 
-- Read `data-pid` / `data-mapsuri` off the button (added in step 2 above).
-- If `photo` is present in `dataFor(n)`, render it above (or beside) the map
-  iframe — a simple `<img>` or background-image div, same visual treatment as
-  the existing `.pick-img`/`.zhero` thumbnails elsewhere in the site.
-- If `review` is present, show it as a short labeled block, e.g. "From a
-  Google review" + the trimmed snippet — real API data meant for exactly this
-  display use case, so no copyright concern, but keep it short (the fetch
-  script already trims to 180 chars) and don't stack more than one.
-- Prefer `mapsUri` (or a `place_id`-built link,
-  `https://www.google.com/maps/place/?q=place_id:` + placeId) for the
-  "primary" action instead of the current text-query URL, when available —
-  meaningfully more reliable than today's decoded-query fallback.
-- Keep every existing fallback path working when `PLACES_DATA` has no entry
-  for a given place (i.e. before the script has been run, or for the small
-  number of generic/non-searchable food entries) — the sheet should degrade
-  exactly to its current behavior, never break.
+### Step 4 — the popup (`openSheet`, `index.html:1535`)
 
-## Nice-to-have / stretch
+Sheet markup already in the page (`id="sheet"`, hidden): a `sheetSub`, `sheetTitle`,
+a `sheetFrame` iframe, `sheetActs`, and a `sheetNote`. `openSheet(b)` currently
+reads `INFO[n]` for the rating/price sub-line and builds a text-query map link.
 
-The same script pattern works for the 63 **sight** entries too (Alcazaba,
-Puente Nuevo, Caminito walkway, etc.) — real photos and precise deep links
-there would be an equally good improvement, just a second `PLACES` list and
-a second merge pass. Not required for this task; mention it as a fast follow.
+Extend it to:
 
-## Cost and quota
+- Read through `dataFor(n)` (not `INFO[n]`) for the rating/price sub-line.
+- Read `data-pid` / `data-mapsuri` off the button (added in step 2).
+- If `photo` is present, render it above/beside the map iframe — same visual
+  treatment as the existing `.pick-img` / `.zhero` thumbnails.
+- If `review` is present, show it as one short labeled block ("From a Google
+  review" + snippet). Already trimmed to 180 chars; never stack more than one.
+- Prefer `mapsUri`, or a `place_id` link
+  (`https://www.google.com/maps/place/?q=place_id:` + placeId), for the primary
+  action over the text-query fallback — more reliable.
+- **Keep every existing fallback working** when `PLACES_DATA` has no entry
+  (before the script is run, or for generic/non-searchable entries). The sheet
+  must degrade to exactly its current behavior, never break.
 
-Roughly 50–100 Places API (New) requests total for one run (Text Search +
-one Photo call per resolved place). Free-tier/monthly-credit terms change,
-so have the user check current pricing and set a budget alert in Cloud
-Console before running it, rather than trusting any number here. Restrict
-the key to "Places API (New)" only regardless of which integration path is
-chosen.
+---
 
-## Acceptance checklist
+## 7. Stretch: sights
 
-- [ ] `fetch-places.mjs` runs standalone with `node fetch-places.mjs KEY`
-      and produces valid JSON on stdout, progress on stderr.
+The same pattern extends to the 63 **sight** entries (Alcazaba, Puente Nuevo,
+Caminito walkway, …) — a second `PLACES` list and a second merge pass for real
+photos and precise deep links. Not required; a good fast follow.
+
+---
+
+## 8. Acceptance checklist
+
+- [ ] `fetch-places.mjs` runs via `node fetch-places.mjs "$(cat gcloud.secret)"`
+      → valid JSON on stdout, progress on stderr.
 - [ ] No API key anywhere in `index.html`, `places-data.json`, or git history.
+      (`gcloud.secret` is git-ignored and was never committed.)
 - [ ] Restaurants with a `PLACES_DATA` entry show a real photo, live
       rating/price, and open to a `place_id`-based Maps link.
-- [ ] Restaurants without one still behave exactly as today (REALFOOD photo
-      or none, existing map-link behavior) — no regressions.
-- [ ] The popup shows a review snippet only when one exists; layout doesn't
-      break when photo/review/placeId are all absent.
-- [ ] DE/EN toggle still works inside the popup (existing `sheetNote`,
-      `sheetOpen`, `sheetDir`, `sheetCall`, `reviews` strings all still used).
+- [ ] Restaurants without one keep today's category placeholder and existing
+      map-link behavior — no regressions.
+- [ ] The popup shows a review snippet only when one exists; layout survives
+      photo/review/placeId all being absent.
+- [ ] DE/EN toggle still works inside the popup (`sheetNote`, `sheetOpen`,
+      `sheetDir`, `sheetCall`, `reviews` strings all still used).
