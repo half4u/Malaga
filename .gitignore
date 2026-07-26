@@ -1,0 +1,13 @@
+# === SECRETS — never commit these ===
+# Google Places API key lives here, local-only. See places-api-integration.md.
+gcloud.secret
+*.secret
+.env
+.env.*
+
+# Node
+node_modules/
+
+# OS cruft
+.DS_Store
+Thumbs.db
