@@ -2528,8 +2528,13 @@ function openSheet(b){
       +(d.review?`<p class="sheet-review"><b>${LANG===0?"Aus einer Google-Bewertung":"From a Google review"}</b> ${esc(d.review)}</p>`:"");
     map.parentNode.insertBefore(extra,map);
   }
+  // Use the place name as the embed query so Google resolves it to the real
+  // labelled business marker (name shown on the map) rather than a bare pin at
+  // coordinates. Falls back to the coordinate/text query when no name/data is
+  // known. Keyless (the place_id: query is NOT supported on this endpoint).
+  const embedQ=(d.placeId&&label)?label:q;
   document.getElementById("sheetFrame").src=
-    "https://www.google.com/maps?q="+encodeURIComponent(q)+"&z=16&hl="+(LANG===0?"de":"en")+"&output=embed";
+    "https://www.google.com/maps?q="+encodeURIComponent(embedQ)+"&z=16&hl="+(LANG===0?"de":"en")+"&output=embed";
   const primary=mapsuri||(pid?"https://www.google.com/maps/place/?q=place_id:"+encodeURIComponent(pid):(url||"https://maps.google.com/?q="+encodeURIComponent(q)));
   const acts=[`<a class="primary" href="${primary}" target="_blank" rel="noopener">${T(UI.sheetOpen)}</a>`,
     `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}" target="_blank" rel="noopener">${T(UI.sheetDir)}</a>`];
