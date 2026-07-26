@@ -2263,8 +2263,9 @@ function chips(n){
 function mapBtn(n,url){
   const key=keyOf(n), label=T(n);
   const i=INFO[key]||[];
+  const d=dataFor(n);
   const q=(i[3]!=null&&i[3]!==0)?i[3]+","+i[4]:(url?decodeURIComponent(url.split("?q=")[1]||key).replace(/\+/g," "):key);
-  return `<button class="mapbtn" data-n="${esc(key)}" data-label="${esc(label)}" data-q="${esc(q)}" data-tel="${esc(i[5]||"")}" data-url="${esc(url||"")}">${T(UI.btnMap)}</button>`;
+  return `<button class="mapbtn" data-n="${esc(key)}" data-label="${esc(label)}" data-q="${esc(q)}" data-tel="${esc(d.tel||"")}" data-url="${esc(url||"")}" data-pid="${esc(d.placeId||"")}" data-mapsuri="${esc(d.mapsUri||"")}">${T(UI.btnMap)}</button>`;
 }
 
 /* ---------- illustrative photos, Wikimedia Commons (freely licensed) ---------- */
