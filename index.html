@@ -203,6 +203,9 @@ ul.sights .mapbtn{margin-top:7px}
   color:var(--buganvilla);margin:0 0 8px}
 .sheet-map{position:relative;height:46vh;min-height:240px;background:#E7E9EC;border:1px solid var(--line);border-radius:3px;overflow:hidden;margin:12px 0 10px}
 .sheet-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.sheet-photo{height:30vh;min-height:160px;background:#E7E9EC center/cover no-repeat;border:1px solid var(--line);border-radius:3px;margin:12px 0 0}
+.sheet-review{font-size:13px;line-height:1.5;color:var(--ink);margin:10px 0 0}
+.sheet-review b{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:3px}
 .sheet-acts{display:flex;gap:8px;flex-wrap:wrap}
 .sheet-acts a{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
   text-decoration:none;padding:9px 13px;border-radius:2px;border:1px solid var(--ink);color:var(--ink)}
@@ -2506,16 +2509,29 @@ const SHEET=document.getElementById("sheet");
 let lastFocus=null;
 function openSheet(b){
   const n=b.dataset.n,label=b.dataset.label||n,q=b.dataset.q,tel=b.dataset.tel,url=b.dataset.url;
-  const i=INFO[n];
+  const pid=b.dataset.pid||"",mapsuri=b.dataset.mapsuri||"";
+  const d=dataFor(n);
   lastFocus=b;
   document.getElementById("sheetTitle").textContent=label;
   const bits=[];
-  if(i&&i[0]) bits.push("★ "+dec(i[0])+" · "+num(i[1])+" "+T(UI.reviews));
-  if(i&&i[2]) bits.push("€".repeat(i[2]));
+  if(d.rating) bits.push("★ "+dec(d.rating)+" · "+num(d.reviews)+" "+T(UI.reviews));
+  if(d.price) bits.push("€".repeat(d.price));
   document.getElementById("sheetSub").textContent=bits.join("  ·  ");
+  // Photo + review injected above the map, only when present. Removed on each
+  // open so a data-less place shows nothing.
+  const map=document.getElementById("sheetFrame").closest(".sheet-map");
+  const oldExtra=document.getElementById("sheetExtra"); if(oldExtra) oldExtra.remove();
+  if(d.photo||d.review){
+    const extra=document.createElement("div");
+    extra.id="sheetExtra";
+    extra.innerHTML=(d.photo?`<div class="sheet-photo" style="background-image:url('${esc(d.photo)}')" role="img" aria-label=""></div>`:"")
+      +(d.review?`<p class="sheet-review"><b>${LANG===0?"Aus einer Google-Bewertung":"From a Google review"}</b> ${esc(d.review)}</p>`:"");
+    map.parentNode.insertBefore(extra,map);
+  }
   document.getElementById("sheetFrame").src=
     "https://www.google.com/maps?q="+encodeURIComponent(q)+"&z=16&hl="+(LANG===0?"de":"en")+"&output=embed";
-  const acts=[`<a class="primary" href="${url||"https://maps.google.com/?q="+encodeURIComponent(q)}" target="_blank" rel="noopener">${T(UI.sheetOpen)}</a>`,
+  const primary=mapsuri||(pid?"https://www.google.com/maps/place/?q=place_id:"+encodeURIComponent(pid):(url||"https://maps.google.com/?q="+encodeURIComponent(q)));
+  const acts=[`<a class="primary" href="${primary}" target="_blank" rel="noopener">${T(UI.sheetOpen)}</a>`,
     `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}" target="_blank" rel="noopener">${T(UI.sheetDir)}</a>`];
   if(tel) acts.push(`<a href="tel:${tel}">${T(UI.sheetCall)}</a>`);
   document.getElementById("sheetActs").innerHTML=acts.join("");
