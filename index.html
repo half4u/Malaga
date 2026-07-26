@@ -2259,7 +2259,7 @@ const keyOf=n=>Array.isArray(n)?n[1]:n;   // stable English/Spanish identifier u
 function chips(n){
   const d=dataFor(n);
   const out=[];
-  if(d.rating) out.push(`<span class="gchip star">★ ${dec(d.rating)} <b>${num(d.reviews)}</b></span>`);
+  if(d.rating) out.push(`<span class="gchip star">★ ${dec(d.rating)} <b>${num(d.reviews||0)}</b></span>`);
   if(d.price) out.push(`<span class="gchip">${"€".repeat(d.price)}</span>`);
   return out.length?`<span class="gchips">${out.join("")}</span>`:"";
 }
@@ -2514,7 +2514,7 @@ function openSheet(b){
   lastFocus=b;
   document.getElementById("sheetTitle").textContent=label;
   const bits=[];
-  if(d.rating) bits.push("★ "+dec(d.rating)+" · "+num(d.reviews)+" "+T(UI.reviews));
+  if(d.rating) bits.push("★ "+dec(d.rating)+" · "+num(d.reviews||0)+" "+T(UI.reviews));
   if(d.price) bits.push("€".repeat(d.price));
   document.getElementById("sheetSub").textContent=bits.join("  ·  ");
   // Photo + review injected above the map, only when present. Removed on each
