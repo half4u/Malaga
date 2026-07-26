@@ -88,6 +88,17 @@ const PLACES = [
   ["El rincón de BUSID", 36.4876, -4.9874],
   ["Restaurante Kuvo", 36.4264, -5.1528],
   ["La Cozzeria", 36.4251, -5.1440],
+  // --- Hidden-gem additions: home base (Mijas / Fuengirola / La Cala) ---
+  ["La Cabra - Bar Tapería", 36.5369, -4.6243],
+  ["PLATOS GASTROBAR", 36.5363, -4.6229],
+  ["Palito tapas restaurante", 36.5377, -4.6222],
+  ["Le Retro", 36.5367, -4.6232],
+  ["TAPAS Lupita", 36.5476, -4.6209],
+  ["Alboka Gastro", 36.5970, -4.6368],
+  ["La terraza de Chema", 36.5970, -4.6379],
+  ["Restaurante El Olivo de La Cala", 36.5002, -4.6845],
+  ["Chiringuito Playa Marina", 36.5068, -4.6506],
+  ["Chiringuito Oasis", 36.5661, -4.5971],
 ];
 
 // Sights have no per-entry coords in the site data, so each is biased on its
