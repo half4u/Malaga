@@ -2530,9 +2530,12 @@ function openSheet(b){
   }
   // Use the place name as the embed query so Google resolves it to the real
   // labelled business marker (name shown on the map) rather than a bare pin at
-  // coordinates. Falls back to the coordinate/text query when no name/data is
+  // coordinates. Anchor the name to the known coordinates ("name @lat,lng") so a
+  // common name (e.g. "La Buena Vida") resolves to THIS location, not a namesake
+  // elsewhere. Falls back to the coordinate/text query when no name/data is
   // known. Keyless (the place_id: query is NOT supported on this endpoint).
-  const embedQ=(d.placeId&&label)?label:q;
+  const hasCoords=/^-?\d+\.?\d*,-?\d+\.?\d*$/.test(q);
+  const embedQ=(d.placeId&&label)?(hasCoords?label+" @"+q:label):q;
   document.getElementById("sheetFrame").src=
     "https://www.google.com/maps?q="+encodeURIComponent(embedQ)+"&z=16&hl="+(LANG===0?"de":"en")+"&output=embed";
   const primary=mapsuri||(pid?"https://www.google.com/maps/place/?q=place_id:"+encodeURIComponent(pid):(url||"https://maps.google.com/?q="+encodeURIComponent(q)));
